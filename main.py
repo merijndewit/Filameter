@@ -1,12 +1,12 @@
 from tkinter import *
 import os
 
+import CaptureImage as captureImage
+
 root = Tk()
 
-#creating labels
-headerLabel = Label(root, text="Filameter")
+captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
 
-#positioning the labels on the screen
-headerLabel.grid(row=0, column=0)
+captureButton.grid(row=0, column=0)
 
 root.mainloop();
