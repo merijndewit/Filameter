@@ -17,9 +17,7 @@ imageLabel2.grid(row=0, column=2)
 
 def RefreshImages():
     global capture
-    global thresholdImage
     global contourImage
-    #global imageLabel
 
     capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
     imageLabel.configure(image = capture)

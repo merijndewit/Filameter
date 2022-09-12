@@ -10,13 +10,8 @@ def ProcessImage():
     img = GetGrayscaleCapturedImage()
     threshold = GetThresholdImage(img)
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(GetGrayscaleCapturedImage(), cv2.COLOR_GRAY2BGR))
-    contourImage = GetDiameterFromWidthPosition(contourImage, 600)
-    contourImage = GetDiameterFromWidthPosition(contourImage, 800)
-    contourImage = GetDiameterFromWidthPosition(contourImage, 1000)
-    contourImage = GetDiameterFromWidthPosition(contourImage, 1200)
-    contourImage = GetDiameterFromWidthPosition(contourImage, 1400)
 
-
+    contourImage = GetDiameterOfImage(contourImage, 15)
 
     WriteImage(contourImage, "contourImage")
     #WriteImage(threshold, "processedImage")
@@ -50,6 +45,18 @@ def DrawContours(contours, imageToDrawOn):
     
     return imageToDrawOn
 
+def GetDiameterOfImage(image, numberOfMeasurements):
+    imageWidth = image.shape[1]
+
+    pixelsPerMeasurement = int(imageWidth / (numberOfMeasurements + 1))
+
+    for i in range(numberOfMeasurements):
+        image = GetDiameterFromWidthPosition(image, int(pixelsPerMeasurement * (i + 1)))
+
+
+    return image
+
+
 def GetDiameterFromWidthPosition(image, imagePositionWidth):
     imageHeight = image.shape[0]
 
@@ -72,5 +79,5 @@ def GetDiameterFromWidthPosition(image, imagePositionWidth):
 
     image = cv2.line(image, (imagePositionWidth, filamentTopPosition), (imagePositionWidth, filamentBottomPosition), (0, 255, 0), 1)
     
-    image = cv2.putText(image, str(filamentBottomPosition - filamentTopPosition) + ' px', (int(imagePositionWidth + 5), int(imageHeight / 2)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
+    image = cv2.putText(image, str(filamentBottomPosition - filamentTopPosition) + 'px', (int(imagePositionWidth + 5), int(imageHeight / 2)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
     return image
