@@ -2,7 +2,7 @@ from picamera import PiCamera
 import time
 import os
 camera = PiCamera()
-camera.resolution = (1920, 1080)
+camera.resolution = (2000, 500)
 
 def CaptureImage():
     camera.start_preview()

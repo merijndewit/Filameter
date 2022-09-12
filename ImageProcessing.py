@@ -10,7 +10,7 @@ def ProcessImage():
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(GetGrayscaleCapturedImage(), cv2.COLOR_GRAY2BGR))
     contourImageWithDiameter = CountPixelsInDiameter(contourImage)
     WriteImage(contourImageWithDiameter, "contourImage")
-    WriteImage(threshold, "processedImage")
+    #WriteImage(threshold, "processedImage")
 
     
 
