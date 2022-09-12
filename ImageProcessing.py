@@ -1,14 +1,18 @@
 import cv2
 import os
 
-thresholdValue = 140 #value between 0 and 255
+thresholdValue = 110 #value between 0 and 255
+minObjectSize = 8000
 
 def ProcessImage():
     img = GetGrayscaleCapturedImage()
     threshold = GetThresholdImage(img)
-    contourImage = DrawContours(GetContours(threshold), GetCapturedImage())
-    WriteImage(contourImage, "contourImage")
+    contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(GetGrayscaleCapturedImage(), cv2.COLOR_GRAY2BGR))
+    contourImageWithDiameter = CountPixelsInDiameter(contourImage)
+    WriteImage(contourImageWithDiameter, "contourImage")
     WriteImage(threshold, "processedImage")
+
+    
 
 def GetGrayscaleCapturedImage():
     return cv2.imread(os.path.dirname(os.path.realpath(__file__)) + "/CapturedImages/capture.png", cv2.IMREAD_GRAYSCALE)
@@ -32,5 +36,33 @@ def GetContours(thresholdImage):
     return contours
 
 def DrawContours(contours, imageToDrawOn):
-    cv2.drawContours(imageToDrawOn, contours, -1, (0, 0, 255), 2)
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > minObjectSize:
+            cv2.drawContours(imageToDrawOn, contour, -1, (0, 0, 255), 2)
+    
     return imageToDrawOn
+
+def CountPixelsInDiameter(image):
+    imageHeight = image.shape[0]
+    imageWidth = image.shape[1]
+
+    filamentTopPosition = 0
+    filamentBottomPosition = 0
+
+    for i in range(imageHeight):
+        b, g, r = image[i, int(imageWidth / 2)]
+
+        if(r == 255 and g == 0 and b == 0):
+           filamentTopPosition = i
+           break
+
+    for i in range(imageHeight - 1, -1, -1):
+        b, g, r = image[i, int(imageWidth / 2)]
+
+        if(r == 255 and g == 0 and b == 0):
+           filamentBottomPosition = i
+           break
+
+    imageWithLine = cv2.line(image, (int(imageWidth / 2), filamentTopPosition), (int(imageWidth / 2), filamentBottomPosition), (0, 255, 0), 2)
+    return imageWithLine
