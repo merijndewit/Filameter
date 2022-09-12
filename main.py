@@ -1,16 +1,10 @@
 from tkinter import *
 
-
 import CaptureImage as captureImage
 import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 
-
-
-
 root = Tk()
-
-
 
 capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
 imageLabel = Label(image=capture)
@@ -18,11 +12,10 @@ imageLabel = Label(image=capture)
 contourImage = imageManager.GetImageAndResizeTK("CapturedImages/contourImage.png", (0.2))
 imageLabel2 = Label(image=contourImage)
 
-
 imageLabel.grid(row=0, column=0)
 imageLabel2.grid(row=0, column=2)
 
-def Clicked():
+def RefreshImages():
     global capture
     global thresholdImage
     global contourImage
@@ -37,7 +30,7 @@ def Clicked():
 previewButton = Button(root, text="Preview", command=captureImage.Preview)
 captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
 imageProcessButton = Button(root, text="Process Image", command=imageProcessing.ProcessImage)
-refreshImages = Button(root, text="Refresh Image", command=Clicked)
+refreshImages = Button(root, text="Refresh Image", command=RefreshImages)
 previewButton.grid(row=2, column=0)
 captureButton.grid(row=3, column=0)
 imageProcessButton.grid(row=4, column=0)
