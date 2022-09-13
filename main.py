@@ -7,33 +7,48 @@ import PerformanceTimer as pt
 
 root = Tk()
 
-capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
+#capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
+capture = imageManager.GetImageTK(imageManager.GetEmptyImage())
 imageLabel = Label(image=capture)
 
-contourImage = imageManager.GetImageAndResizeTK("CapturedImages/contourImage.png", (0.2))
+#contourImage = imageManager.GetImageAndResizeTK("CapturedImages/contourImage.png", (0.2))
+contourImage = imageManager.GetImageTK(imageManager.GetEmptyImage())
 imageLabel2 = Label(image=contourImage)
 
 imageLabel.grid(row=0, column=0)
 imageLabel2.grid(row=0, column=2)
+    
 
-def RefreshImages():
+def RefreshCapturedImage(capturedImage):
     global capture
-    global contourImage
-    pt.StartTimer()
-    capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
+    capture = capturedImage
     imageLabel.configure(image = capture)
 
-    contourImage = imageManager.GetImageAndResizeTK("CapturedImages/contourImage.png", 0.2)
+def RefreshProcessedImage(processedImage):
+    global contourImage
+    contourImage = processedImage
     imageLabel2.configure(image=contourImage)
-    pt.StopTimer("Refreshing image")
+
+def TakeAndMeasureImage():
+    capturedimage = captureImage.CaptureImage()
+    processedImage = imageProcessing.ProcessImage(capturedimage)
+
+    pt.StartTimer()
+
+    RefreshCapturedImage(imageManager.PILToTKAndResize(capturedimage, 0.2))
+    RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.2))
+
+    pt.StopTimer("Refreshed images")
+
 
 previewButton = Button(root, text="Preview", command=captureImage.Preview)
 captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
 imageProcessButton = Button(root, text="Process Image", command=imageProcessing.ProcessImage)
-refreshImages = Button(root, text="Refresh Image", command=RefreshImages)
+captureAndProcessButton = Button(root, text="Process & capture", command=TakeAndMeasureImage)
+
 previewButton.grid(row=2, column=0)
 captureButton.grid(row=3, column=0)
 imageProcessButton.grid(row=4, column=0)
-refreshImages.grid(row=5, column=0)
+captureAndProcessButton.grid(row=5, column=0)
 
 root.mainloop();

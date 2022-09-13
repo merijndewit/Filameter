@@ -1,6 +1,6 @@
 import cv2
 import os
-
+import numpy
 import PerformanceTimer as pt
 
 thresholdValue = 110 #value between 0 and 255
@@ -9,22 +9,33 @@ pixelsPerMilimeter = 157.5
 
 contourLineWidth = 2
 
-def ProcessImage():
+def ProcessImage(imageToProcess, writeImages = False):
     pt.StartTimer()
-    img = GetGrayscaleCapturedImage()
-    threshold = GetThresholdImage(img)
-    contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(GetGrayscaleCapturedImage(), cv2.COLOR_GRAY2BGR))
 
+    imageGrayscale = ConvertImageToGrayscale(PILToCV2(imageToProcess))
+    threshold = GetThresholdImage(imageGrayscale)
+    contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
     contourImage = GetDiameterOfImage(contourImage, 11)
 
-    WriteImage(contourImage, "contourImage")
-    pt.StopTimer("Procssing image")
-    #WriteImage(threshold, "processedImage")
+    if writeImages:
+        WriteImage(contourImage, "contourImage")
 
-def GetGrayscaleCapturedImage():
+    pt.StopTimer("Procssing image")
+
+    return contourImage
+
+def PILToCV2(image):
+    array = numpy.array(image)
+    return cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
+     
+
+def ConvertImageToGrayscale(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+def GetGrayscaleCapturedImageFile():
     return cv2.imread(os.path.dirname(os.path.realpath(__file__)) + "/CapturedImages/capture.png", cv2.IMREAD_GRAYSCALE)
 
-def GetCapturedImage():
+def GetCapturedImageFile():
     return cv2.imread(os.path.dirname(os.path.realpath(__file__)) + "/CapturedImages/capture.png", cv2.IMREAD_ANYCOLOR)
 
 def GetThresholdImage(img):
