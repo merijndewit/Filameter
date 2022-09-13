@@ -52,17 +52,10 @@ def DisableButtonWhenRelatedTaskIsRunning(threadToRun, button):
     threadToRun.start()
     threading.Thread(target=EnableButtonWhenRelatedTaskIsFinished, args=(threadToRun, button)).start()
 
-
-captureThread = threading.Thread(target=TakeAndMeasureImage)
-
 previewButton = Button(root, text="Preview", command=captureImage.Preview)
-captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
-imageProcessButton = Button(root, text="Process Image", command=imageProcessing.ProcessImage)
-captureAndProcessButton = Button(root, text="Process & capture", command= lambda: DisableButtonWhenRelatedTaskIsRunning(captureThread, captureAndProcessButton))
+captureAndProcessButton = Button(root, text="Process & capture", command= lambda: DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), captureAndProcessButton))
 
 previewButton.grid(row=2, column=0)
-captureButton.grid(row=3, column=0)
-imageProcessButton.grid(row=4, column=0)
 captureAndProcessButton.grid(row=5, column=0)
 
 root.mainloop();
