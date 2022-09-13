@@ -1,19 +1,24 @@
 import cv2
 import os
 
+import PerformanceTimer as pt
+
 thresholdValue = 110 #value between 0 and 255
 minObjectSize = 8000
+pixelsPerMilimeter = 157.5
 
 contourLineWidth = 2
 
 def ProcessImage():
+    pt.StartTimer()
     img = GetGrayscaleCapturedImage()
     threshold = GetThresholdImage(img)
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(GetGrayscaleCapturedImage(), cv2.COLOR_GRAY2BGR))
 
-    contourImage = GetDiameterOfImage(contourImage, 15)
+    contourImage = GetDiameterOfImage(contourImage, 11)
 
     WriteImage(contourImage, "contourImage")
+    pt.StopTimer("Procssing image")
     #WriteImage(threshold, "processedImage")
 
 def GetGrayscaleCapturedImage():
@@ -80,4 +85,6 @@ def GetDiameterFromWidthPosition(image, imagePositionWidth):
     image = cv2.line(image, (imagePositionWidth, filamentTopPosition), (imagePositionWidth, filamentBottomPosition), (0, 255, 0), 1)
     
     image = cv2.putText(image, str(filamentBottomPosition - filamentTopPosition) + 'px', (int(imagePositionWidth + 5), int(imageHeight / 2)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
+    image = cv2.putText(image, str(round((filamentBottomPosition - filamentTopPosition) / pixelsPerMilimeter, 3)) + 'mm', (int(imagePositionWidth + 5), int((imageHeight / 2) + 50)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
+    
     return image

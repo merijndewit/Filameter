@@ -3,6 +3,7 @@ from tkinter import *
 import CaptureImage as captureImage
 import ImageProcessing as imageProcessing
 import ImageManager as imageManager
+import PerformanceTimer as pt
 
 root = Tk()
 
@@ -18,12 +19,13 @@ imageLabel2.grid(row=0, column=2)
 def RefreshImages():
     global capture
     global contourImage
-
+    pt.StartTimer()
     capture = imageManager.GetImageAndResizeTK("CapturedImages/capture.png", 0.2)
     imageLabel.configure(image = capture)
 
     contourImage = imageManager.GetImageAndResizeTK("CapturedImages/contourImage.png", 0.2)
     imageLabel2.configure(image=contourImage)
+    pt.StopTimer("Refreshing image")
 
 previewButton = Button(root, text="Preview", command=captureImage.Preview)
 captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
