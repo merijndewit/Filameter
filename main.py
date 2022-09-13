@@ -1,9 +1,11 @@
+from ast import arguments
 from tkinter import *
 
 import CaptureImage as captureImage
 import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 import PerformanceTimer as pt
+import threading
 
 root = Tk()
 
@@ -17,6 +19,7 @@ imageLabel2 = Label(image=contourImage)
 
 imageLabel.grid(row=0, column=0)
 imageLabel2.grid(row=0, column=2)
+
     
 
 def RefreshCapturedImage(capturedImage):
@@ -40,11 +43,22 @@ def TakeAndMeasureImage():
 
     pt.StopTimer("Refreshed images")
 
+def EnableButtonWhenRelatedTaskIsFinished(threadToTrack, buttonToEnable):
+    threadToTrack.join()
+    buttonToEnable["state"] = "normal"
+
+def DisableButtonWhenRelatedTaskIsRunning(threadToRun, button):
+    button["state"] = "disabled"
+    threadToRun.start()
+    threading.Thread(target=EnableButtonWhenRelatedTaskIsFinished, args=(threadToRun, button)).start()
+
+
+captureThread = threading.Thread(target=TakeAndMeasureImage)
 
 previewButton = Button(root, text="Preview", command=captureImage.Preview)
 captureButton = Button(root, text="Capture", command=captureImage.CaptureImage)
 imageProcessButton = Button(root, text="Process Image", command=imageProcessing.ProcessImage)
-captureAndProcessButton = Button(root, text="Process & capture", command=TakeAndMeasureImage)
+captureAndProcessButton = Button(root, text="Process & capture", command= lambda: DisableButtonWhenRelatedTaskIsRunning(captureThread, captureAndProcessButton))
 
 previewButton.grid(row=2, column=0)
 captureButton.grid(row=3, column=0)
