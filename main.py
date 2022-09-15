@@ -17,8 +17,14 @@ imageFrame = customtkinter.CTkFrame(master=root,
                                height=200,
                                corner_radius=4,
                                fg_color="#1E1E1E")
-imageFrame.grid(row=0, column=0, padx=(10, 10), pady=(10, 10))
+imageFrame.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
 
+buttonFrame = customtkinter.CTkFrame(master=root,
+                               width=150,
+                               height=200,
+                               corner_radius=4,
+                               fg_color="#1E1E1E")
+buttonFrame.grid(row=1, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
 
 #capture = imageManager.GetImageTK(imageManager.GetEmptyImage())
 imageLabel = customtkinter.CTkLabel(master=imageFrame, width=760, height=190, bg_color="#292929", corner_radius=0, text="")
@@ -26,7 +32,7 @@ imageLabel = customtkinter.CTkLabel(master=imageFrame, width=760, height=190, bg
 imageLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 10))
 
 buttonColor = "#F5BEE0"
-buttonHoverColor = "#EAC3D6"
+buttonHoverColor = "#F9DCEE"
 
 def RefreshProcessedImage(processedImage):
     global contourImage
@@ -41,22 +47,22 @@ def TakeAndMeasureImage():
 
     RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.38))
 
-    pt.StopTimer("Refreshed images")
+    pt.StopTimer("Refreshing images")
 
 def EnableButtonWhenRelatedTaskIsFinished(threadToTrack, buttonToEnable):
     threadToTrack.join()
-    buttonToEnable["state"] = "normal"
+    buttonToEnable.configure(state=NORMAL)
 
 def DisableButtonWhenRelatedTaskIsRunning(threadToRun, button):
-    button["state"] = "disabled"
+    button.configure(state=DISABLED)
     threadToRun.start()
     threading.Thread(target=EnableButtonWhenRelatedTaskIsFinished, args=(threadToRun, button)).start()
 
-captureAndProcessButton = customtkinter.CTkButton(root, text="Process \n & \n capture", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), captureAndProcessButton))
-captureAndProcessButton.grid(row=2, column=0, padx=(10, 0), pady=(10, 0))
+captureAndProcessButton = customtkinter.CTkButton(master=buttonFrame, text="Process \n & \n capture", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), captureAndProcessButton))
+captureAndProcessButton.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
 
-previewButton = customtkinter.CTkButton(master=root, text="Preview",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 11), width=80, height=35, command=captureImage.Preview)
-previewButton.grid(row=3, column=0, padx=(10, 0), pady=(10, 0))
+previewButton = customtkinter.CTkButton(master=buttonFrame, text="Preview",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 11), width=80, height=55, command=captureImage.Preview)
+previewButton.grid(row=1, column=0, padx=(10, 10), pady=(5, 10))
 #button.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 root.mainloop();
