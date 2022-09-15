@@ -9,6 +9,7 @@ def GetImageTK(image):
 def CV2ToTKAndResize(image, scale):
     sizeX = int(image.shape[1] * scale)
     sizeY = int(image.shape[0] * scale)
+    print((sizeX, sizeY))
     resizedImage = cv2.resize(image, (sizeX, sizeY))
     return itk.PhotoImage(CV2ToPIL(resizedImage))
 
@@ -24,4 +25,4 @@ def CV2ToPIL(img):
     return pilImage
 
 def GetEmptyImage():
-    return Image.new("RGB",(10,10))
+    return Image.new("RGB",(800,200), (100, 100, 100))
