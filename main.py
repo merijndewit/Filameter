@@ -13,6 +13,7 @@ buttonHoverColor = "#F9DCEE"
 
 filamentViewFrame = None
 buttonFrame = None
+measurementFrame = None
 
 def TakeAndMeasureImage():
     capturedimage = captureImage.CaptureImage()
@@ -20,7 +21,7 @@ def TakeAndMeasureImage():
 
     pt.StartTimer()
 
-    filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.38))
+    filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))
 
     pt.StopTimer("Refreshing images")
 
@@ -44,8 +45,8 @@ class FilamentViewFrame(customtkinter.CTkFrame):
                         height=200,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-        self.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
-        self.imageLabel = customtkinter.CTkLabel(master=self, width=760, height=190, bg_color="#292929", corner_radius=0, text="")
+        self.grid(row=0, column=0, padx=(60, 60), pady=(10, 5))
+        self.imageLabel = customtkinter.CTkLabel(master=self, width=680, height=170, bg_color="#292929", corner_radius=0, text="")
 
         self.imageLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 10))
 
@@ -54,7 +55,7 @@ class FilamentViewFrame(customtkinter.CTkFrame):
         contourImage = processedImage
         self.imageLabel.configure(image=contourImage)
 
-class ButtonFrame(customtkinter.CTkFrame):
+class ButtonFrame(customtkinter.CTkFrame):  
     def __init__(self, parent, *args, **kwargs):
         customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
@@ -65,11 +66,41 @@ class ButtonFrame(customtkinter.CTkFrame):
 
         self.grid(row=1, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
 
-        captureAndProcessButton = customtkinter.CTkButton(master=self, text="Process \n & \n capture", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: ButtonHelper.DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), captureAndProcessButton))
-        captureAndProcessButton.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff" )
+        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
-        previewButton = customtkinter.CTkButton(master=self, text="Preview",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 11), width=80, height=55, command=captureImage.Preview)
-        previewButton.grid(row=1, column=0, padx=(10, 10), pady=(5, 10))
+        self.captureAndProcessButton = customtkinter.CTkButton(master=self, text="Process \n & \n capture", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: ButtonHelper.DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), self.captureAndProcessButton))
+        self.captureAndProcessButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
+
+        self.previewButton = customtkinter.CTkButton(master=self, text="Preview",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 11), width=80, height=55, command=captureImage.Preview)
+        self.previewButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
+
+class ControlPad(customtkinter.CTkFrame):
+    def __init__(self, parent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        self.configure( width=150,
+                        height=200,
+                        corner_radius=4,
+                        fg_color="#1E1E1E")
+
+        self.grid(row=1, column=0, padx=(10, 30), pady=(5, 0), sticky=E)
+
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff" )
+        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
+
+        self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 16), width=50, height=50)
+        self.addButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
+
+        self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 16), width=50, height=50)
+        self.subtractButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
+
+
+    def AddNumberOfCuts(self, numberOfCutsToAdd):
+        numberOfCutsToAdd
+
+        
+
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
@@ -77,4 +108,6 @@ if __name__ == "__main__":
     root.configure(bg='#121212')
     filamentViewFrame = FilamentViewFrame(root)
     buttonFrame = ButtonFrame(root)
+    measurementFrame = ControlPad(root)
+
     root.mainloop();
