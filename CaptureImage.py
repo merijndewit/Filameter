@@ -16,11 +16,10 @@ def CaptureImage(save=False):
     pt.StartTimer()
     stream = BytesIO()
 
-    #camera.start_preview()
-    #sleep(0.1)
-    camera.capture(stream, format='png')
-    #camera.stop_preview()
 
+    #camera.capture(stream, format='png')
+    camera.capture_sequence([stream])
+    stream.truncate()
     stream.seek(0)
     image = Image.open(stream)
 

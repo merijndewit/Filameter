@@ -15,7 +15,7 @@ def ProcessImage(imageToProcess, writeImages = False):
     imageGrayscale = ConvertImageToGrayscale(PILToCV2(imageToProcess))
     threshold = GetThresholdImage(imageGrayscale)
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
-    contourImage = GetDiameterOfImage(contourImage, 11)
+    contourImage = GetDiameterOfImage(contourImage, 11, 200)
 
     if writeImages:
         WriteImage(contourImage, "contourImage")
@@ -61,13 +61,13 @@ def DrawContours(contours, imageToDrawOn):
     
     return imageToDrawOn
 
-def GetDiameterOfImage(image, numberOfMeasurements):
+def GetDiameterOfImage(image, numberOfMeasurements, sideBorder=0):
     imageWidth = image.shape[1]
 
-    pixelsPerMeasurement = int(imageWidth / (numberOfMeasurements + 1))
+    pixelsPerMeasurement = int((imageWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
 
     for i in range(numberOfMeasurements):
-        image = GetDiameterFromWidthPosition(image, int(pixelsPerMeasurement * (i + 1)))
+        image = GetDiameterFromWidthPosition(image, int((pixelsPerMeasurement * (i + 1)) + sideBorder))
 
 
     return image
