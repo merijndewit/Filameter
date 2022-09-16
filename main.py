@@ -8,23 +8,6 @@ import ImageManager as imageManager
 import PerformanceTimer as pt
 import threading
 
-buttonColor = "#F5BEE0"
-buttonHoverColor = "#F9DCEE"
-
-filamentViewFrame = None
-buttonFrame = None
-measurementFrame = None
-
-def TakeAndMeasureImage():
-    capturedimage = captureImage.CaptureImage()
-    processedImage = imageProcessing.ProcessImage(capturedimage)
-
-    pt.StartTimer()
-
-    filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))
-
-    pt.StopTimer("Refreshing images")
-
 class ButtonHelper():
     @staticmethod
     def EnableButtonWhenRelatedTaskIsFinished(threadToTrack, buttonToEnable):
@@ -69,10 +52,10 @@ class ButtonFrame(customtkinter.CTkFrame):
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff" )
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
-        self.captureAndProcessButton = customtkinter.CTkButton(master=self, text="Process \n & \n capture", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: ButtonHelper.DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=TakeAndMeasureImage), self.captureAndProcessButton))
+        self.captureAndProcessButton = customtkinter.CTkButton(master=self, text="Process \n & \n capture", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: ButtonHelper.DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=parent.TakeAndMeasureImage), self.captureAndProcessButton))
         self.captureAndProcessButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
 
-        self.previewButton = customtkinter.CTkButton(master=self, text="Preview",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 11), width=80, height=55, command=captureImage.Preview)
+        self.previewButton = customtkinter.CTkButton(master=self, text="Preview",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 11), width=80, height=55, command=captureImage.Preview)
         self.previewButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
 
 class ControlPad(customtkinter.CTkFrame):
@@ -89,25 +72,35 @@ class ControlPad(customtkinter.CTkFrame):
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff" )
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
-        self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 16), width=50, height=50)
+        self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50)
         self.addButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
 
-        self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=buttonColor, hover_color=buttonHoverColor, text_font=("", 16), width=50, height=50)
+        self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50)
         self.subtractButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
 
+class Main(customtkinter.CTk):
+    def __init__(self, *args, **kwargs):
+        customtkinter.CTk.__init__(self, *args, **kwargs)
+        self.geometry("800x480")
+        self.configure(bg='#121212')
 
-    def AddNumberOfCuts(self, numberOfCutsToAdd):
-        numberOfCutsToAdd
+        self.buttonColor = "#F5BEE0"
+        self.buttonHoverColor = "#F9DCEE"
 
-        
+        self.filamentViewFrame = FilamentViewFrame(self)
+        self.buttonFrame = ButtonFrame(self)
+        self.measurementFrame = ControlPad(self)
+        self.mainloop();
 
+    def TakeAndMeasureImage(self):
+        capturedimage = captureImage.CaptureImage()
+        processedImage = imageProcessing.ProcessImage(capturedimage)
+
+        pt.StartTimer()
+
+        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))
+
+        pt.StopTimer("Refreshing images")
 
 if __name__ == "__main__":
-    root = customtkinter.CTk()
-    root.geometry("800x480")
-    root.configure(bg='#121212')
-    filamentViewFrame = FilamentViewFrame(root)
-    buttonFrame = ButtonFrame(root)
-    measurementFrame = ControlPad(root)
-
-    root.mainloop();
+    Main()
