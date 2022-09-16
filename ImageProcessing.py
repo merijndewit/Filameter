@@ -9,13 +9,13 @@ pixelsPerMilimeter = 157.5
 
 contourLineWidth = 2
 
-def ProcessImage(imageToProcess, writeImages = False):
+def ProcessImage(imageToProcess, numberOfMeasurements, borderOffset, writeImages = False):
     pt.StartTimer()
 
     imageGrayscale = ConvertImageToGrayscale(PILToCV2(imageToProcess))
     threshold = GetThresholdImage(imageGrayscale)
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
-    contourImage = GetDiameterOfImage(contourImage, 11, 200)
+    contourImage = GetDiameterOfImage(contourImage, numberOfMeasurements, borderOffset)
 
     if writeImages:
         WriteImage(contourImage, "contourImage")

@@ -94,8 +94,8 @@ class SettingsButton():
     def UpdateTextValue(self):
         self.ctkButton.configure(text=self.text + str(self.value))
 
-    def ChangeValue(self, value):
-        self.value = value
+    def AddValue(self, value):
+        self.value += value
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
@@ -110,8 +110,6 @@ class SettingsFrame(customtkinter.CTkFrame):
 
         self.selectedButton = None
 
-        self.numberOfMeasurements = 4
-
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Settings", text_color="#ffffff" )
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
@@ -121,17 +119,11 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
         self.numberOfMeasurementsSetting.UpdateTextValue()
 
-        self.test1 = customtkinter.CTkButton(master=self, text="test1", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.test1.grid(row=2, column=0, padx=(10, 10), pady=(2, 5))
-        self.test1Setting = SettingsButton(self.test1, "test1 ", 4)
-        self.test1.configure(command=lambda: self.Select(self.test1Setting))
-        self.test1Setting.UpdateTextValue()
-
-        self.test2 = customtkinter.CTkButton(master=self, text="test2", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.test2.grid(row=3, column=0, padx=(10, 10), pady=(2, 5))
-        self.test2Setting = SettingsButton(self.test2, "test2 ", 4)
-        self.test2.configure(command=lambda: self.Select(self.test2Setting))
-        self.test2Setting.UpdateTextValue()
+        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="Measure border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 10), pady=(2, 5))
+        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "Measure border offset ", 200)
+        self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
+        self.measureBorderOffsetButtonSetting.UpdateTextValue()
 
     def Select(self, selectedButton):
         if selectedButton == self.selectedButton:
@@ -144,15 +136,17 @@ class SettingsFrame(customtkinter.CTkFrame):
         selectedButton.Select()
 
     def AddSelectedValue(self, value):
-
         if self.selectedButton == None:
             return
-
-        newValue = self.selectedButton.value + value
         
-
-        self.selectedButton.ChangeValue(newValue)
+        self.selectedButton.AddValue(value)
         self.selectedButton.UpdateTextValue()
+
+    def GetNumberOfMeasurements(self):
+        return self.numberOfMeasurementsSetting.value
+
+    def GetBorderOffset(self):
+        return self.measureBorderOffsetButtonSetting.value
 
 class Main(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
@@ -171,7 +165,7 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage = imageProcessing.ProcessImage(capturedimage)
+        processedImage = imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset())
 
         pt.StartTimer()
 
