@@ -182,6 +182,8 @@ class Main(customtkinter.CTk):
         self.recordingThread = None
         self.recording = False
 
+        self.lastAverageReading = 0
+
         self.filamentViewFrame = FilamentViewFrame(self)
         self.buttonFrame = ButtonFrame(self)
         self.settingsFrame = SettingsFrame(self)
@@ -191,8 +193,8 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage = imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset())
-
+        processedImage, self.lastAverageReading = imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset())
+        print("Last average reading was: " + str(self.lastAverageReading))
         pt.StartTimer()
 
         self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))

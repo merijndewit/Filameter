@@ -15,14 +15,14 @@ def ProcessImage(imageToProcess, numberOfMeasurements, borderOffset, writeImages
     imageGrayscale = ConvertImageToGrayscale(PILToCV2(imageToProcess))
     threshold = GetThresholdImage(imageGrayscale)
     contourImage = DrawContours(GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
-    contourImage = GetDiameterOfImage(contourImage, numberOfMeasurements, borderOffset)
+    contourImage, averageReading = GetDiameterOfImage(contourImage, numberOfMeasurements, borderOffset)
 
     if writeImages:
         WriteImage(contourImage, "contourImage")
 
     pt.StopTimer("Procssing image")
 
-    return contourImage
+    return contourImage, averageReading
 
 def PILToCV2(image):
     array = numpy.array(image)
@@ -66,11 +66,15 @@ def GetDiameterOfImage(image, numberOfMeasurements, sideBorder=0):
 
     pixelsPerMeasurement = int((imageWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
 
+    diameterMeasurements = 0
+
     for i in range(numberOfMeasurements):
-        image = GetDiameterFromWidthPosition(image, int((pixelsPerMeasurement * (i + 1)) + sideBorder))
+        image, diameterReading = GetDiameterFromWidthPosition(image, int((pixelsPerMeasurement * (i + 1)) + sideBorder))
+        diameterMeasurements += diameterReading
 
+    diameterMeasurements = diameterMeasurements
 
-    return image
+    return image, diameterMeasurements / int(numberOfMeasurements)
 
 
 def GetDiameterFromWidthPosition(image, imagePositionWidth):
@@ -97,5 +101,6 @@ def GetDiameterFromWidthPosition(image, imagePositionWidth):
     
     image = cv2.putText(image, str(filamentBottomPosition - filamentTopPosition) + 'px', (int(imagePositionWidth + 5), int(imageHeight / 2)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
     image = cv2.putText(image, str(round((filamentBottomPosition - filamentTopPosition) / pixelsPerMilimeter, 3)) + 'mm', (int(imagePositionWidth + 5), int((imageHeight / 2) + 50)), cv2.QT_FONT_NORMAL, 1, (255, 0, 0), 1, cv2.LINE_AA)
-    
-    return image
+    diameterInMM = round((filamentBottomPosition - filamentTopPosition) / pixelsPerMilimeter, 3)
+
+    return image, diameterInMM
