@@ -8,6 +8,7 @@ import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 import PerformanceTimer as pt
 import threading
+import time
 
 class ButtonHelper():
     @staticmethod
@@ -68,7 +69,7 @@ class ControlPad(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(10, 30), pady=(5, 0), sticky=E)
+        self.grid(row=1, column=0, padx=(10, 30), pady=(5, 0), sticky=NE)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff" )
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -106,7 +107,7 @@ class SettingsFrame(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(200, 30), pady=(5, 0), sticky=W)
+        self.grid(row=1, column=0, padx=(200, 30), pady=(5, 0), sticky=NW)
 
         self.selectedButton = None
 
@@ -115,13 +116,13 @@ class SettingsFrame(customtkinter.CTkFrame):
 
         self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
-        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of measurements ", 4)
+        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", 4)
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
         self.numberOfMeasurementsSetting.UpdateTextValue()
 
-        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="Measure border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 10), pady=(2, 5))
-        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "Measure border offset ", 200)
+        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", 200)
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
         self.measureBorderOffsetButtonSetting.UpdateTextValue()
 
@@ -148,6 +149,27 @@ class SettingsFrame(customtkinter.CTkFrame):
     def GetBorderOffset(self):
         return self.measureBorderOffsetButtonSetting.value
 
+
+class RecordPad(customtkinter.CTkFrame):
+    def __init__(self, parent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        self.configure( width=150,
+                        height=200,
+                        corner_radius=4,
+                        fg_color="#1E1E1E")
+
+        self.grid(row=1, column=0, padx=(320, 30), pady=(5, 0), sticky=N)
+
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff" )
+        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
+
+        self.addButton = customtkinter.CTkButton(master=self, text="Start", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 11), width=55, height=35, command= lambda: self.parent.StartRecording())
+        self.addButton.grid(row=1, column=0, padx=(5, 2), pady=(2, 5), sticky=W)
+
+        self.subtractButton = customtkinter.CTkButton(master=self, text="Stop",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 11), width=55, height=35, command= lambda: self.parent.StopRecording())
+        self.subtractButton.grid(row=1, column=0, padx=(2, 5), pady=(5, 10), sticky=E)
+
 class Main(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
         customtkinter.CTk.__init__(self, *args, **kwargs)
@@ -157,10 +179,14 @@ class Main(customtkinter.CTk):
         self.buttonColor = "#F5BEE0"
         self.buttonHoverColor = "#F9DCEE"
 
+        self.recordingThread = None
+        self.recording = False
+
         self.filamentViewFrame = FilamentViewFrame(self)
         self.buttonFrame = ButtonFrame(self)
         self.settingsFrame = SettingsFrame(self)
         self.controlPad = ControlPad(self)
+        self.recordPad = RecordPad(self)
         self.mainloop();
 
     def TakeAndMeasureImage(self):
@@ -172,6 +198,21 @@ class Main(customtkinter.CTk):
         self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))
 
         pt.StopTimer("Refreshing images")
+
+    def StartRecording(self):
+        print("start recording")
+        self.recording = True
+        self.recordingThread = threading.Thread(target= lambda: self.Record(0)).start()
+
+    def StopRecording(self):
+        self.recording = False
+        #self.recordingThread.join()
+        print("stop recording")
+
+    def Record(self, delaySec):
+        while self.recording:
+            self.TakeAndMeasureImage()
+            time.sleep(delaySec)
 
 if __name__ == "__main__":
     Main()
