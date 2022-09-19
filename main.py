@@ -147,6 +147,12 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
         self.measureBorderOffsetButtonSetting.UpdateTextValue()
 
+        self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 10), pady=(2, 5))
+        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", 157)
+        self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
+        self.pixelsPerMMButtonSetting.UpdateTextValue()
+
     def Select(self, selectedButton):
         if selectedButton == self.selectedButton:
             selectedButton.UnSelect()
@@ -169,6 +175,9 @@ class SettingsFrame(customtkinter.CTkFrame):
 
     def GetBorderOffset(self):
         return self.measureBorderOffsetButtonSetting.value
+
+    def GetPixelsPerMM(self):
+        return self.pixelsPerMMButtonSetting.value
 
 
 class RecordPad(customtkinter.CTkFrame):
@@ -205,17 +214,21 @@ class Main(customtkinter.CTk):
 
         self.lastAverageReading = 0
 
+        #frames
         self.filamentViewFrame = FilamentViewFrame(self)
         self.buttonFrame = ButtonFrame(self)
         self.settingsFrame = SettingsFrame(self)
         self.controlPad = ControlPad(self)
         self.recordPad = RecordPad(self)
         self.filamentInfo= FilamentInfo(self)
+
+        self.imageProcessing = imageProcessing.ImageProcessing()
+
         self.mainloop();
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, self.lastAverageReading = imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset())
+        processedImage, self.lastAverageReading = self.imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset(), self.settingsFrame.GetPixelsPerMM())
         self.filamentInfo.SetAverageTextValue(self.lastAverageReading)
         pt.StartTimer()
 
