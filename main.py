@@ -1,6 +1,7 @@
 from ast import arguments
 from cgitb import text
 from tkinter import *
+from enum import Enum
 
 import customtkinter
 import CaptureImage as captureImage
@@ -101,11 +102,54 @@ class ControlPad(customtkinter.CTkFrame):
         self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(-1))
         self.subtractButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
 
+class SettingType(Enum):
+    NUMBEROFMEASUREMENTS = 1
+    BORDEROFFSET = 2
+    PIXELSPERMM = 3
+
+class Setting():
+    def __init__(self, value, settingType):
+        self.value = value
+        self.type = settingType
+
+    def GetValue(self):
+        return self.value
+
+    def GetValueInt(self):
+        return int(self.value)
+    
+    def GetValueFloat(self):
+        return float(self.value)
+
+    def Set(self, value):
+        self.value = value
+
+    def Add(self, value):
+        self.value += value
+
+
+class Settings():
+    def __init__(self):
+        self.settings = []
+        self.CreateSetting(4, SettingType.NUMBEROFMEASUREMENTS)
+        self.CreateSetting(200, SettingType.BORDEROFFSET)
+        self.CreateSetting(157, SettingType.PIXELSPERMM)
+
+    def CreateSetting(self, value, settingType):
+        newSetting = Setting(value, settingType)
+        self.settings.append(newSetting)
+
+    def GetSetting(self, settingType):
+        for i in range(len(self.settings)):
+            if self.settings[i].type == settingType:
+                return self.settings[i]
+
 class SettingsButton():
-    def __init__(self, ctkButton, text, value):
+    def __init__(self, ctkButton, text, settingType, main):
         self.ctkButton = ctkButton
         self.text = text
-        self.value = value
+        self.settingType = settingType
+        self.main = main
 
     def Select(self):
         self.ctkButton.configure(fg_color="#7C98B3", hover_color="#7C98B3")
@@ -113,11 +157,13 @@ class SettingsButton():
     def UnSelect(self):
         self.ctkButton.configure(fg_color="#292929", hover_color="#292929")
 
-    def UpdateTextValue(self):
-        self.ctkButton.configure(text=self.text + str(self.value))
+    def SetTextValue(self, value):
+        self.ctkButton.configure(text=self.text + str(value))
 
-    def AddValue(self, value):
-        self.value += value
+    def UpdateTextValueFromSetting(self):
+        setting = self.main.settings.GetSetting(self.settingType)
+
+        self.ctkButton.configure(text=self.text + str(setting.GetValue()))
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
@@ -137,21 +183,22 @@ class SettingsFrame(customtkinter.CTkFrame):
 
         self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
-        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", 4)
+        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", SettingType.NUMBEROFMEASUREMENTS, self.parent)
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
-        self.numberOfMeasurementsSetting.UpdateTextValue()
+        self.numberOfMeasurementsSetting.UpdateTextValueFromSetting()
 
         self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 10), pady=(2, 5))
-        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", 200)
+        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", SettingType.BORDEROFFSET, self.parent)
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
-        self.measureBorderOffsetButtonSetting.UpdateTextValue()
+        self.measureBorderOffsetButtonSetting.UpdateTextValueFromSetting()
 
         self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 10), pady=(2, 5))
-        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", 157)
+        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", SettingType.PIXELSPERMM, self.parent)
         self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
-        self.pixelsPerMMButtonSetting.UpdateTextValue()
+        self.pixelsPerMMButtonSetting.UpdateTextValueFromSetting()
+
 
     def Select(self, selectedButton):
         if selectedButton == self.selectedButton:
@@ -166,18 +213,10 @@ class SettingsFrame(customtkinter.CTkFrame):
     def AddSelectedValue(self, value):
         if self.selectedButton == None:
             return
+        setting = self.parent.settings.GetSetting(self.selectedButton.settingType)
         
-        self.selectedButton.AddValue(value)
-        self.selectedButton.UpdateTextValue()
-
-    def GetNumberOfMeasurements(self):
-        return self.numberOfMeasurementsSetting.value
-
-    def GetBorderOffset(self):
-        return self.measureBorderOffsetButtonSetting.value
-
-    def GetPixelsPerMM(self):
-        return self.pixelsPerMMButtonSetting.value
+        setting.Add(value)
+        self.selectedButton.UpdateTextValueFromSetting()
 
 
 class RecordPad(customtkinter.CTkFrame):
@@ -214,6 +253,9 @@ class Main(customtkinter.CTk):
 
         self.lastAverageReading = 0
 
+        #settings
+        self.settings = Settings()
+
         #frames
         self.filamentViewFrame = FilamentViewFrame(self)
         self.buttonFrame = ButtonFrame(self)
@@ -228,7 +270,7 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, self.lastAverageReading = self.imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset(), self.settingsFrame.GetPixelsPerMM())
+        processedImage, self.lastAverageReading = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
         self.filamentInfo.SetAverageTextValue(self.lastAverageReading)
         pt.StartTimer()
 
