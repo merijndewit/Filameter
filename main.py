@@ -26,12 +26,12 @@ class FilamentViewFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
         customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.configure( width=800,
-                        height=200,
+        self.configure( width=620,
+                        height=180,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-        self.grid(row=0, column=0, padx=(60, 60), pady=(10, 5))
-        self.imageLabel = customtkinter.CTkLabel(master=self, width=680, height=170, bg_color="#292929", corner_radius=0, text="")
+        self.grid(row=0, column=0, padx=(10, 10), pady=(10, 5), sticky=W)
+        self.imageLabel = customtkinter.CTkLabel(master=self, width=600, height=150, bg_color="#292929", corner_radius=0, text="")
 
         self.imageLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 10))
 
@@ -39,6 +39,27 @@ class FilamentViewFrame(customtkinter.CTkFrame):
         global contourImage
         contourImage = processedImage
         self.imageLabel.configure(image=contourImage)
+
+class FilamentInfo(customtkinter.CTkFrame):
+    def __init__(self, parent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        self.configure( width=150,
+                        height=200,
+                        corner_radius=4,
+                        fg_color="#1E1E1E")
+        self.grid(row=0, column=0, padx=(640, 10), pady=(10, 5), sticky=NE)
+
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Filament Info", text_color="#ffffff", text_font='Helvetica 11 bold')
+        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
+
+        self.averageText = customtkinter.CTkLabel(master=self, text="Avg dia: ", text_color="#ffffff")
+        self.averageText.grid(row=1, column=0, padx=(2, 2), pady=(2, 0))
+
+    def SetAverageTextValue(self, value):
+        self.averageText.configure(text="Avg dia: " + str(round(value, 3)) + "mm")
+
+
 
 class ButtonFrame(customtkinter.CTkFrame):  
     def __init__(self, parent, *args, **kwargs):
@@ -51,7 +72,7 @@ class ButtonFrame(customtkinter.CTkFrame):
 
         self.grid(row=1, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
 
-        self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff" )
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
         self.captureAndProcessButton = customtkinter.CTkButton(master=self, text="Process \n & \n capture", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("Arial Baltic", 11), width=80, height=65,command= lambda: ButtonHelper.DisableButtonWhenRelatedTaskIsRunning(threading.Thread(target=parent.TakeAndMeasureImage), self.captureAndProcessButton))
@@ -69,9 +90,9 @@ class ControlPad(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(10, 30), pady=(5, 0), sticky=NE)
+        self.grid(row=1, column=0, padx=(600, 5), pady=(5, 0), sticky=NE)
 
-        self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff" )
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
         self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(1))
@@ -111,7 +132,7 @@ class SettingsFrame(customtkinter.CTkFrame):
 
         self.selectedButton = None
 
-        self.headerLabel = customtkinter.CTkLabel(master=self, text="Settings", text_color="#ffffff" )
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Settings", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
         self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
@@ -161,7 +182,7 @@ class RecordPad(customtkinter.CTkFrame):
 
         self.grid(row=1, column=0, padx=(320, 30), pady=(5, 0), sticky=N)
 
-        self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff" )
+        self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
         self.addButton = customtkinter.CTkButton(master=self, text="Start", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 11), width=55, height=35, command= lambda: self.parent.StartRecording())
@@ -189,27 +210,25 @@ class Main(customtkinter.CTk):
         self.settingsFrame = SettingsFrame(self)
         self.controlPad = ControlPad(self)
         self.recordPad = RecordPad(self)
+        self.filamentInfo= FilamentInfo(self)
         self.mainloop();
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
         processedImage, self.lastAverageReading = imageProcessing.ProcessImage(capturedimage, self.settingsFrame.GetNumberOfMeasurements(), self.settingsFrame.GetBorderOffset())
-        print("Last average reading was: " + str(self.lastAverageReading))
+        self.filamentInfo.SetAverageTextValue(self.lastAverageReading)
         pt.StartTimer()
 
-        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.34))
+        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.30))
 
         pt.StopTimer("Refreshing images")
 
     def StartRecording(self):
-        print("start recording")
         self.recording = True
         self.recordingThread = threading.Thread(target= lambda: self.Record(0)).start()
 
     def StopRecording(self):
         self.recording = False
-        #self.recordingThread.join()
-        print("stop recording")
 
     def Record(self, delaySec):
         while self.recording:
