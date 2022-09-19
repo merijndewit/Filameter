@@ -22,6 +22,27 @@ class ButtonHelper():
         threadToRun.start()
         threading.Thread(target=ButtonHelper.EnableButtonWhenRelatedTaskIsFinished, args=(threadToRun, button)).start()
 
+class SettingsButton():
+    def __init__(self, ctkButton, text, settingType, main):
+        self.ctkButton = ctkButton
+        self.text = text
+        self.settingType = settingType
+        self.main = main
+
+    def Select(self):
+        self.ctkButton.configure(fg_color="#7C98B3", hover_color="#7C98B3")
+
+    def UnSelect(self):
+        self.ctkButton.configure(fg_color="#292929", hover_color="#292929")
+
+    def SetTextValue(self, value):
+        self.ctkButton.configure(text=self.text + str(value))
+
+    def UpdateTextValueFromSetting(self):
+        setting = self.main.settings.GetSetting(self.settingType)
+
+        self.ctkButton.configure(text=self.text + str(setting.GetValue()))
+
 
 class FilamentViewFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
@@ -60,7 +81,19 @@ class FilamentInfo(customtkinter.CTkFrame):
     def SetAverageTextValue(self, value):
         self.averageText.configure(text="Avg dia: " + str(round(value, 3)) + "mm")
 
+class ValueToggleButton():
+    def __init__(self, ctkButton, value):
+        self.ctkButton = ctkButton
+        self.value = value
 
+    def Select(self):
+        self.ctkButton.configure(fg_color="#7C98B3", hover_color="#7C98B3")
+
+    def UnSelect(self):
+        self.ctkButton.configure(fg_color="#292929", hover_color="#292929")
+
+    def DisplayValue(self):
+        self.ctkButton.configure(text=str(self.value))
 
 class ButtonFrame(customtkinter.CTkFrame):  
     def __init__(self, parent, *args, **kwargs):
@@ -93,14 +126,44 @@ class ControlPad(customtkinter.CTkFrame):
 
         self.grid(row=1, column=0, padx=(600, 5), pady=(5, 0), sticky=NE)
 
+        self.selectedButton = None
+        self.addValue = 0
+
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Control", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
-        self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(1))
-        self.addButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
+        self.addButton = customtkinter.CTkButton(master=self, text="+", fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(self.addValue))
+        self.addButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5), sticky=W)
 
-        self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(-1))
-        self.subtractButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
+        self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(- self.addValue))
+        self.subtractButton.grid(row=1, column=0, padx=(10, 10), pady=(5, 10), sticky=E)
+
+        self.addAmountButton02 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=50, height=50)
+        self.addAmountButton02.grid(row=2, column=0, padx=(10, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton02Setting = ValueToggleButton(self.addAmountButton02, 0.2)
+        self.addAmountButton02.configure(command=lambda: self.Select(self.addAmountButton02Setting))
+        self.addAmountButton02Setting.DisplayValue()
+
+        self.addAmountButton1 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=50, height=50)
+        self.addAmountButton1.grid(row=2, column=0, padx=(70, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton1Setting = ValueToggleButton(self.addAmountButton1, 1)
+        self.addAmountButton1.configure(command=lambda: self.Select(self.addAmountButton1Setting))
+        self.addAmountButton1Setting.DisplayValue()
+
+        self.Select(self.addAmountButton1Setting)
+
+
+    def Select(self, selectedButton):
+        if selectedButton == self.selectedButton:
+            selectedButton.UnSelect()
+            self.selectedButton = None
+            self.addValue = 0
+            return
+        if self.selectedButton is not None:
+            self.selectedButton.UnSelect()
+        self.selectedButton = selectedButton
+        selectedButton.Select()
+        self.addValue = selectedButton.value
 
 class SettingType(Enum):
     NUMBEROFMEASUREMENTS = 1
@@ -144,26 +207,7 @@ class Settings():
             if self.settings[i].type == settingType:
                 return self.settings[i]
 
-class SettingsButton():
-    def __init__(self, ctkButton, text, settingType, main):
-        self.ctkButton = ctkButton
-        self.text = text
-        self.settingType = settingType
-        self.main = main
 
-    def Select(self):
-        self.ctkButton.configure(fg_color="#7C98B3", hover_color="#7C98B3")
-
-    def UnSelect(self):
-        self.ctkButton.configure(fg_color="#292929", hover_color="#292929")
-
-    def SetTextValue(self, value):
-        self.ctkButton.configure(text=self.text + str(value))
-
-    def UpdateTextValueFromSetting(self):
-        setting = self.main.settings.GetSetting(self.settingType)
-
-        self.ctkButton.configure(text=self.text + str(setting.GetValue()))
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
