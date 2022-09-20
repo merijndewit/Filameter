@@ -19,14 +19,14 @@ class ImageProcessing():
         imageGrayscale = self.ConvertImageToGrayscale(self.PILToCV2(imageToProcess))
         threshold = self.GetThresholdImage(imageGrayscale)
         contourImage = self.DrawContours(self.GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
-        contourImage, averageReading = self.GetDiameterOfImage(contourImage, numberOfMeasurements, borderOffset)
+        contourImage, readings = self.GetDiameterOfImage(contourImage, numberOfMeasurements, borderOffset)
 
         if writeImages:
             self.WriteImage(contourImage, "contourImage")
 
         pt.StopTimer("Procssing image")
 
-        return contourImage, averageReading
+        return contourImage, readings
 
     @staticmethod
     def PILToCV2(image):
@@ -68,15 +68,13 @@ class ImageProcessing():
 
         pixelsPerMeasurement = int((imageWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
 
-        diameterMeasurements = 0
+        measurements = []
 
         for i in range(numberOfMeasurements):
             image, diameterReading = self.GetDiameterFromWidthPosition(image, int((pixelsPerMeasurement * (i + 1)) + sideBorder))
-            diameterMeasurements += diameterReading
+            measurements.append(diameterReading)
 
-        diameterMeasurements = diameterMeasurements
-
-        return image, diameterMeasurements / int(numberOfMeasurements)
+        return image, measurements
 
 
     def GetDiameterFromWidthPosition(self, image, imagePositionWidth):

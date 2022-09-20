@@ -8,6 +8,7 @@ import CaptureImage as captureImage
 import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 import PerformanceTimer as pt
+import FilamentCalculations as filamentCalculations
 import threading
 import time
 
@@ -78,8 +79,14 @@ class FilamentInfo(customtkinter.CTkFrame):
         self.averageText = customtkinter.CTkLabel(master=self, text="Avg dia: ", text_color="#ffffff")
         self.averageText.grid(row=1, column=0, padx=(2, 2), pady=(2, 0))
 
+        self.toleranceText = customtkinter.CTkLabel(master=self, text="Tolerance: ", text_color="#ffffff")
+        self.toleranceText.grid(row=2, column=0, padx=(2, 2), pady=(2, 0))
+
     def SetAverageTextValue(self, value):
         self.averageText.configure(text="Avg dia: " + str(round(value, 3)) + "mm")
+
+    def SetToleranceTextValue(self, value):
+        self.toleranceText.configure(text="Tolerance: " + str(round(value, 3)) + "+- mm")
 
 class ValueToggleButton():
     def __init__(self, ctkButton, value):
@@ -138,17 +145,23 @@ class ControlPad(customtkinter.CTkFrame):
         self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(- self.addValue))
         self.subtractButton.grid(row=1, column=0, padx=(10, 10), pady=(5, 10), sticky=E)
 
-        self.addAmountButton02 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=50, height=50)
-        self.addAmountButton02.grid(row=2, column=0, padx=(10, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton02 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
+        self.addAmountButton02.grid(row=2, column=0, padx=(5, 0), pady=(2, 5), sticky=W)
         self.addAmountButton02Setting = ValueToggleButton(self.addAmountButton02, 0.2)
         self.addAmountButton02.configure(command=lambda: self.Select(self.addAmountButton02Setting))
         self.addAmountButton02Setting.DisplayValue()
 
-        self.addAmountButton1 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=50, height=50)
-        self.addAmountButton1.grid(row=2, column=0, padx=(70, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton1 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
+        self.addAmountButton1.grid(row=2, column=0, padx=(50, 0), pady=(2, 5), sticky=W)
         self.addAmountButton1Setting = ValueToggleButton(self.addAmountButton1, 1)
         self.addAmountButton1.configure(command=lambda: self.Select(self.addAmountButton1Setting))
         self.addAmountButton1Setting.DisplayValue()
+
+        self.addAmountButton5 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
+        self.addAmountButton5.grid(row=2, column=0, padx=(90, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton5Setting = ValueToggleButton(self.addAmountButton5, 5)
+        self.addAmountButton5.configure(command=lambda: self.Select(self.addAmountButton5Setting))
+        self.addAmountButton5Setting.DisplayValue()
 
         self.Select(self.addAmountButton1Setting)
 
@@ -295,7 +308,7 @@ class Main(customtkinter.CTk):
         self.recordingThread = None
         self.recording = False
 
-        self.lastAverageReading = 0
+        self.lastReadings = []
 
         #settings
         self.settings = Settings()
@@ -314,8 +327,11 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, self.lastAverageReading = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
-        self.filamentInfo.SetAverageTextValue(self.lastAverageReading)
+        processedImage, self.lastReadings = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
+        
+        self.filamentInfo.SetAverageTextValue(filamentCalculations.GetAverageFromReadings(self.lastReadings))
+        self.filamentInfo.SetToleranceTextValue(filamentCalculations.GetToleranceFromReadings(self.lastReadings))
+
         pt.StartTimer()
 
         self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.30))
@@ -335,4 +351,4 @@ class Main(customtkinter.CTk):
             time.sleep(delaySec)
 
 if __name__ == "__main__":
-    Main()
+    Main() 
