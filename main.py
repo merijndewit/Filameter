@@ -75,10 +75,35 @@ class FilamentGraph(customtkinter.CTkFrame):
 
         self.graphCanvas = Canvas(self, bg='#1E1E1E', width=610, height=40, highlightthickness=0)
         self.graphCanvas.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
-
+        self.drawnLines = []
 
     def DrawGraphFromReadings(self, readings):
-        line = self.graphCanvas.create_line(10, 10, 20, 20, fill="#7C98B3", width=4)
+        self.ClearCanvas()
+        numberOfMeasurements = len(readings)
+
+        targetDiameter = 1.75
+        displacementMultiplier = 75
+
+        
+
+        for i in range(numberOfMeasurements - 1):
+            yPos0 = ((targetDiameter - readings[i]) * displacementMultiplier) + 20
+            yPos1 = ((targetDiameter - readings[i + 1]) * displacementMultiplier) + 20
+            print(yPos0, yPos1)
+            line = self.graphCanvas.create_line(self.GetXdrawingPosition(numberOfMeasurements, i, 610), yPos0, self.GetXdrawingPosition(numberOfMeasurements, i + 1, 610), yPos1, fill="#7C98B3", width=4)
+            self.drawnLines.append(line)
+
+    def GetXdrawingPosition(self, numberOfMeasurements, measurementIndex, canvasWidth):
+        sideBorder = self.parent.settings.GetSetting(SettingType.BORDEROFFSET).GetValue() * 0.3
+        pixelsPerMeasurement = int((canvasWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
+
+        position = int((pixelsPerMeasurement * (measurementIndex + 1)) + sideBorder)
+        return position
+
+    def ClearCanvas(self):
+        for i in range(len(self.drawnLines)):
+            self.graphCanvas.delete(self.drawnLines[i])
+
 
 class FilamentInfo(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
@@ -103,7 +128,7 @@ class FilamentInfo(customtkinter.CTkFrame):
         self.averageText.configure(text="Avg dia: " + str(round(value, 3)) + "mm")
 
     def SetToleranceTextValue(self, value):
-        self.toleranceText.configure(text="Tolerance: " + str(round(value, 3)) + "+- mm")
+        self.toleranceText.configure(text="Tolerance: +/-" + str(round(value, 3)) + "mm")
 
 class ValueToggleButton():
     def __init__(self, ctkButton, value):
