@@ -63,6 +63,23 @@ class FilamentViewFrame(customtkinter.CTkFrame):
         contourImage = processedImage
         self.imageLabel.configure(image=contourImage)
 
+class FilamentGraph(customtkinter.CTkFrame):
+    def __init__(self, parent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        self.configure( width=620,
+                        height=50,
+                        corner_radius=4,
+                        fg_color="#1E1E1E")
+        self.grid(row=1, column=0, padx=(10, 10), pady=(5, 5), sticky=W)
+
+        self.graphCanvas = Canvas(self, bg='#1E1E1E', width=610, height=40, highlightthickness=0)
+        self.graphCanvas.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
+
+
+    def DrawGraphFromReadings(self, readings):
+        line = self.graphCanvas.create_line(10, 10, 20, 20, fill="#7C98B3", width=4)
+
 class FilamentInfo(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
         customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
@@ -111,7 +128,7 @@ class ButtonFrame(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
+        self.grid(row=2, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -131,7 +148,7 @@ class ControlPad(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(600, 5), pady=(5, 0), sticky=NE)
+        self.grid(row=2, column=0, padx=(600, 5), pady=(5, 0), sticky=NE)
 
         self.selectedButton = None
         self.addValue = 0
@@ -231,7 +248,7 @@ class SettingsFrame(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(200, 30), pady=(5, 0), sticky=NW)
+        self.grid(row=2, column=0, padx=(200, 30), pady=(5, 0), sticky=NW)
 
         self.selectedButton = None
 
@@ -285,7 +302,7 @@ class RecordPad(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=1, column=0, padx=(320, 30), pady=(5, 0), sticky=N)
+        self.grid(row=2, column=0, padx=(320, 30), pady=(5, 0), sticky=N)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -315,6 +332,7 @@ class Main(customtkinter.CTk):
 
         #frames
         self.filamentViewFrame = FilamentViewFrame(self)
+        self.filamentGraph = FilamentGraph(self)
         self.buttonFrame = ButtonFrame(self)
         self.settingsFrame = SettingsFrame(self)
         self.controlPad = ControlPad(self)
@@ -328,7 +346,7 @@ class Main(customtkinter.CTk):
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
         processedImage, self.lastReadings = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
-        
+        self.filamentGraph.DrawGraphFromReadings(self.lastReadings)
         self.filamentInfo.SetAverageTextValue(filamentCalculations.GetAverageFromReadings(self.lastReadings))
         self.filamentInfo.SetToleranceTextValue(filamentCalculations.GetToleranceFromReadings(self.lastReadings))
 
