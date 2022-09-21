@@ -1,5 +1,6 @@
 from ast import arguments
 from cgitb import text
+from contextlib import nullcontext
 from tkinter import *
 from enum import Enum
 
@@ -9,6 +10,7 @@ import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 import PerformanceTimer as pt
 import FilamentCalculations as filamentCalculations
+import RecordingSaver as recordingSaver
 import threading
 import time
 
@@ -75,6 +77,9 @@ class FilamentGraph(customtkinter.CTkFrame):
 
         self.graphCanvas = Canvas(self, bg='#1E1E1E', width=610, height=40, highlightthickness=0)
         self.graphCanvas.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
+
+        self.graphCanvas.create_line(0, 20, 610, 20, fill="#ffffff", width=1)
+
         self.drawnLines = []
 
     def DrawGraphFromReadings(self, readings):
@@ -83,8 +88,6 @@ class FilamentGraph(customtkinter.CTkFrame):
 
         targetDiameter = 1.75
         displacementMultiplier = 75
-
-        
 
         for i in range(numberOfMeasurements - 1):
             yPos0 = ((targetDiameter - readings[i]) * displacementMultiplier) + 20
@@ -338,6 +341,30 @@ class RecordPad(customtkinter.CTkFrame):
         self.subtractButton = customtkinter.CTkButton(master=self, text="Stop",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 11), width=55, height=35, command= lambda: self.parent.StopRecording())
         self.subtractButton.grid(row=1, column=0, padx=(2, 5), pady=(5, 10), sticky=E)
 
+class MeasurementInfo():
+    def __init__(self, measurements, averageDiameter, tolerance):
+        self.measurements = measurements
+        self.averageDiameter = averageDiameter
+        self.minDiameter = min(measurements)
+        self.maxDiameter = max(measurements)
+        self.tolerance = tolerance
+
+class FilamentRecording():
+    def __init__(self):
+        self.measurementInfoList = []
+        self.maxDiameter = 0
+        self.minDiameter = 99
+        self.tolerance = None
+        
+    def AddMeasurementInfo(self, measurementInfo):
+        self.measurementInfoList.append(measurementInfo)
+        if self.maxDiameter < measurementInfo.maxDiameter:
+            self.maxDiameter = measurementInfo.maxDiameter
+        if self.minDiameter > measurementInfo.minDiameter:
+            self.minDiameter = measurementInfo.minDiameter
+
+        
+
 class Main(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
         customtkinter.CTk.__init__(self, *args, **kwargs)
@@ -350,7 +377,9 @@ class Main(customtkinter.CTk):
         self.recordingThread = None
         self.recording = False
 
-        self.lastReadings = []
+        self.lastMeasurementInfo = None
+
+        self.filamentRecording = None
 
         #settings
         self.settings = Settings()
@@ -370,10 +399,11 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, self.lastReadings = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
-        self.filamentGraph.DrawGraphFromReadings(self.lastReadings)
-        self.filamentInfo.SetAverageTextValue(filamentCalculations.GetAverageFromReadings(self.lastReadings))
-        self.filamentInfo.SetToleranceTextValue(filamentCalculations.GetToleranceFromReadings(self.lastReadings))
+        processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
+        
+        self.lastMeasurementInfo = MeasurementInfo(measurements, filamentCalculations.GetAverageFromReadings(measurements), filamentCalculations.GetToleranceFromReadings(measurements))
+
+        self.UpdateUIInfo()
 
         pt.StartTimer()
 
@@ -381,16 +411,24 @@ class Main(customtkinter.CTk):
 
         pt.StopTimer("Refreshing images")
 
+    def UpdateUIInfo(self):
+        self.filamentGraph.DrawGraphFromReadings(self.lastMeasurementInfo.measurements)
+        self.filamentInfo.SetAverageTextValue(self.lastMeasurementInfo.averageDiameter)
+        self.filamentInfo.SetToleranceTextValue(self.lastMeasurementInfo.tolerance)
+
     def StartRecording(self):
         self.recording = True
+        self.filamentRecording = FilamentRecording()
         self.recordingThread = threading.Thread(target= lambda: self.Record(0)).start()
 
     def StopRecording(self):
         self.recording = False
+        #recordingSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
 
     def Record(self, delaySec):
         while self.recording:
             self.TakeAndMeasureImage()
+            self.filamentRecording.AddMeasurementInfo(self.lastMeasurementInfo)
             time.sleep(delaySec)
 
 if __name__ == "__main__":
