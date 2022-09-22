@@ -11,8 +11,10 @@ import ImageManager as imageManager
 import PerformanceTimer as pt
 import FilamentCalculations as filamentCalculations
 import RecordingSaver as recordingSaver
+
 import threading
 import time
+import json
 
 class ButtonHelper():
     @staticmethod
@@ -363,6 +365,10 @@ class FilamentRecording():
         if self.minDiameter > measurementInfo.minDiameter:
             self.minDiameter = measurementInfo.minDiameter
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)
+
         
 
 class Main(customtkinter.CTk):
@@ -423,7 +429,7 @@ class Main(customtkinter.CTk):
 
     def StopRecording(self):
         self.recording = False
-        #recordingSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
+        recordingSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
 
     def Record(self, delaySec):
         while self.recording:

@@ -1,5 +1,5 @@
-import json
+from datetime import datetime
 
 def SaveFilamentRecordingToJSON(filamentRecording):
-    jsonString = json.dumps(filamentRecording.__dict__)
-    print(jsonString)
+    with open("FilamentRecordings/FilamentRecording_" + str(datetime.now()) +".json", "w") as jsonFile:
+        jsonFile.write(filamentRecording.toJSON())
