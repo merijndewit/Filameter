@@ -72,29 +72,40 @@ class FilamentGraph(customtkinter.CTkFrame):
         customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         self.configure( width=620,
-                        height=50,
+                        height=64,
                         corner_radius=4,
                         fg_color="#1E1E1E")
         self.grid(row=1, column=0, padx=(10, 10), pady=(5, 5), sticky=W)
 
-        self.graphCanvas = Canvas(self, bg='#1E1E1E', width=610, height=40, highlightthickness=0)
+        self.targetDiameter = 1.750
+
+        self.graphCanvas = Canvas(self, bg='#1E1E1E', width=610, height=64, highlightthickness=0)
         self.graphCanvas.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))
 
-        self.graphCanvas.create_line(0, 20, 610, 20, fill="#ffffff", width=1)
+        self.graphCanvas.create_line(0, 32, 550, 32, fill="#ffffff", width=1)
+        self.graphCanvas.create_text(608,32,fill="#ffffff",font="Helvetica 8 bold", text=str(self.targetDiameter) + "mm", anchor=E)
+
+        self.maxText = self.graphCanvas.create_text(608,8,fill="#ffffff",font="Helvetica 8 bold", text=str(self.targetDiameter) + "mm", anchor=E)
+        self.minText = self.graphCanvas.create_text(608,56,fill="#ffffff",font="Helvetica 8 bold", text=str(self.targetDiameter) + "mm", anchor=E)
+        self.maxLine = self.graphCanvas.create_line(0, 56, 550, 56, fill="#aaaaaa", width=1)
+        self.minLine = self.graphCanvas.create_line(0, 8, 550, 8, fill="#aaaaaa", width=1)
+
 
         self.drawnLines = []
 
     def DrawGraphFromReadings(self, readings):
         self.ClearCanvas()
-        numberOfMeasurements = len(readings)
+        numberOfMeasurements = len(readings.measurements)
+        maxNumber = max(abs(readings.minDiameter - self.targetDiameter), readings.maxDiameter - self.targetDiameter)
 
-        targetDiameter = 1.75
-        displacementMultiplier = 75
+        displacementMultiplier = 24 / maxNumber
+
+        self.graphCanvas.itemconfig(self.maxText, text="+" + str(round(maxNumber, 3)) + "mm")
+        self.graphCanvas.itemconfig(self.minText, text="-" + str(round(maxNumber, 3)) + "mm")
 
         for i in range(numberOfMeasurements - 1):
-            yPos0 = ((targetDiameter - readings[i]) * displacementMultiplier) + 20
-            yPos1 = ((targetDiameter - readings[i + 1]) * displacementMultiplier) + 20
-            print(yPos0, yPos1)
+            yPos0 = ((self.targetDiameter - readings.measurements[i]) * displacementMultiplier) + 32
+            yPos1 = ((self.targetDiameter - readings.measurements[i + 1]) * displacementMultiplier) + 32
             line = self.graphCanvas.create_line(self.GetXdrawingPosition(numberOfMeasurements, i, 610), yPos0, self.GetXdrawingPosition(numberOfMeasurements, i + 1, 610), yPos1, fill="#7C98B3", width=4)
             self.drawnLines.append(line)
 
@@ -366,9 +377,7 @@ class FilamentRecording():
             self.minDiameter = measurementInfo.minDiameter
 
     def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=4)
-
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         
 
 class Main(customtkinter.CTk):
@@ -409,16 +418,24 @@ class Main(customtkinter.CTk):
         
         self.lastMeasurementInfo = MeasurementInfo(measurements, filamentCalculations.GetAverageFromReadings(measurements), filamentCalculations.GetToleranceFromReadings(measurements))
 
-        self.UpdateUIInfo()
-
         pt.StartTimer()
 
         self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.30))
 
         pt.StopTimer("Refreshing images")
 
-    def UpdateUIInfo(self):
-        self.filamentGraph.DrawGraphFromReadings(self.lastMeasurementInfo.measurements)
+        if self.recording:
+            self.DisplayRecordingInfo()
+            return
+        self.DisplaySingleReadingInfo()
+
+    def DisplaySingleReadingInfo(self):
+        self.filamentGraph.DrawGraphFromReadings(self.lastMeasurementInfo)
+        self.filamentInfo.SetAverageTextValue(self.lastMeasurementInfo.averageDiameter)
+        self.filamentInfo.SetToleranceTextValue(self.lastMeasurementInfo.tolerance)
+
+    def DisplayRecordingInfo(self):
+        self.filamentGraph.DrawGraphFromReadings(self.lastMeasurementInfo)
         self.filamentInfo.SetAverageTextValue(self.lastMeasurementInfo.averageDiameter)
         self.filamentInfo.SetToleranceTextValue(self.lastMeasurementInfo.tolerance)
 
