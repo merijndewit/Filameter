@@ -8,5 +8,6 @@ def StartTimer():
 
 def StopTimer(taskName):
     takenTime = time.time() - startTime
-    print(str(taskName) + " took: " + str(takenTime))
+    if False:
+        print(str(taskName) + " took: " + str(takenTime))
     return takenTime

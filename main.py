@@ -109,6 +109,25 @@ class FilamentGraph(customtkinter.CTkFrame):
             line = self.graphCanvas.create_line(self.GetXdrawingPosition(numberOfMeasurements, i, 610), yPos0, self.GetXdrawingPosition(numberOfMeasurements, i + 1, 610), yPos1, fill="#7C98B3", width=4)
             self.drawnLines.append(line)
 
+    def DrawGraphFromRecording(self, recording):
+        self.ClearCanvas()
+        numberOfMeasurements = len(recording.measurementInfoGroupList)
+        if numberOfMeasurements <= 1:
+            return
+        maxNumber = max(abs(recording.minDiameter - self.targetDiameter), recording.maxDiameter - self.targetDiameter)
+
+        displacementMultiplier = 24 / maxNumber
+
+        self.graphCanvas.itemconfig(self.maxText, text="+" + str(round(maxNumber, 3)) + "mm")
+        self.graphCanvas.itemconfig(self.minText, text="-" + str(round(maxNumber, 3)) + "mm")
+
+
+        for i in range(numberOfMeasurements - 1):
+            yPos0 = ((self.targetDiameter - recording.measurementInfoGroupList[i].averageDiameter) * displacementMultiplier) + 32
+            yPos1 = ((self.targetDiameter - recording.measurementInfoGroupList[i + 1].averageDiameter) * displacementMultiplier) + 32
+            line = self.graphCanvas.create_line(self.GetXdrawingPosition(numberOfMeasurements, i, 610), yPos0, self.GetXdrawingPosition(numberOfMeasurements, i + 1, 610), yPos1, fill="#7C98B3", width=4)
+            self.drawnLines.append(line)
+
     def GetXdrawingPosition(self, numberOfMeasurements, measurementIndex, canvasWidth):
         sideBorder = self.parent.settings.GetSetting(SettingType.BORDEROFFSET).GetValue() * 0.3
         pixelsPerMeasurement = int((canvasWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
@@ -362,19 +381,52 @@ class MeasurementInfo():
         self.maxDiameter = max(measurements)
         self.tolerance = tolerance
 
+class MeasurementInfoGroup():
+    def __init__(self, measurementInfoList):
+        self.tolerance = None
+
+        averageDiameter = 0
+
+
+        for i in range(len(measurementInfoList)):
+            minValues = []
+            maxValues = []
+            toleranceValues = []
+
+            minValues.append(measurementInfoList[i].minDiameter)
+            maxValues.append(measurementInfoList[i].maxDiameter)
+            toleranceValues.append(measurementInfoList[i].tolerance)
+
+            averageDiameter += measurementInfoList[i].averageDiameter
+
+        self.minDiameter = min(minValues)
+        self.maxDiameter = max(maxValues)
+        self.averageDiameter = averageDiameter / len(measurementInfoList)
+
+
+
 class FilamentRecording():
-    def __init__(self):
+    def __init__(self, measurementInfoPerGroup):
         self.measurementInfoList = []
+        self.measurementInfoGroupList = []
         self.maxDiameter = 0
         self.minDiameter = 99
         self.tolerance = None
+        self.measurementInfoPerGroup = measurementInfoPerGroup
         
     def AddMeasurementInfo(self, measurementInfo):
         self.measurementInfoList.append(measurementInfo)
+
         if self.maxDiameter < measurementInfo.maxDiameter:
             self.maxDiameter = measurementInfo.maxDiameter
         if self.minDiameter > measurementInfo.minDiameter:
             self.minDiameter = measurementInfo.minDiameter
+
+        if self.measurementInfoPerGroup <= len(self.measurementInfoList):
+            print("add info group")
+            self.measurementInfoGroupList.append(MeasurementInfoGroup(self.measurementInfoList))
+            self.measurementInfoList = []
+        
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
@@ -435,13 +487,13 @@ class Main(customtkinter.CTk):
         self.filamentInfo.SetToleranceTextValue(self.lastMeasurementInfo.tolerance)
 
     def DisplayRecordingInfo(self):
-        self.filamentGraph.DrawGraphFromReadings(self.lastMeasurementInfo)
+        self.filamentGraph.DrawGraphFromRecording(self.filamentRecording)
         self.filamentInfo.SetAverageTextValue(self.lastMeasurementInfo.averageDiameter)
         self.filamentInfo.SetToleranceTextValue(self.lastMeasurementInfo.tolerance)
 
     def StartRecording(self):
         self.recording = True
-        self.filamentRecording = FilamentRecording()
+        self.filamentRecording = FilamentRecording(5)
         self.recordingThread = threading.Thread(target= lambda: self.Record(0)).start()
 
     def StopRecording(self):
