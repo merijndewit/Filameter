@@ -9,7 +9,7 @@ from time import sleep
 import PerformanceTimer as pt
 
 camera = PiCamera()
-camera.resolution = (2000, 500)
+camera.resolution = (3000, 750)
 camera.framerate = 24
 
 def CaptureImage(save=False):

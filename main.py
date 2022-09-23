@@ -384,9 +384,7 @@ class MeasurementInfo():
 class MeasurementInfoGroup():
     def __init__(self, measurementInfoList):
         self.tolerance = None
-
         averageDiameter = 0
-
 
         for i in range(len(measurementInfoList)):
             minValues = []
@@ -401,32 +399,26 @@ class MeasurementInfoGroup():
 
         self.minDiameter = min(minValues)
         self.maxDiameter = max(maxValues)
+        self.tolerance = max(toleranceValues)
         self.averageDiameter = averageDiameter / len(measurementInfoList)
 
-
-
 class FilamentRecording():
-    def __init__(self, measurementInfoPerGroup):
-        self.measurementInfoList = []
-        self.measurementInfoGroupList = []
+    def __init__(self):
         self.maxDiameter = 0
         self.minDiameter = 99
         self.tolerance = None
-        self.measurementInfoPerGroup = measurementInfoPerGroup
-        
-    def AddMeasurementInfo(self, measurementInfo):
-        self.measurementInfoList.append(measurementInfo)
+        self.measurementInfoGroupList = []
 
-        if self.maxDiameter < measurementInfo.maxDiameter:
-            self.maxDiameter = measurementInfo.maxDiameter
-        if self.minDiameter > measurementInfo.minDiameter:
-            self.minDiameter = measurementInfo.minDiameter
+    def AddMeasurementInfoGroup(self, measurementInfoGroup):
+        self.measurementInfoGroupList.append(measurementInfoGroup)
 
-        if self.measurementInfoPerGroup <= len(self.measurementInfoList):
-            print("add info group")
-            self.measurementInfoGroupList.append(MeasurementInfoGroup(self.measurementInfoList))
-            self.measurementInfoList = []
-        
+        if self.maxDiameter < measurementInfoGroup.maxDiameter:
+            self.maxDiameter = measurementInfoGroup.maxDiameter
+        if self.minDiameter > measurementInfoGroup.minDiameter:
+            self.minDiameter = measurementInfoGroup.minDiameter
+
+    def FinishRecording(self):
+        self.tolerance = (self.maxDiameter - self.minDiameter) / 2
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
@@ -472,7 +464,7 @@ class Main(customtkinter.CTk):
 
         pt.StartTimer()
 
-        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 0.30))
+        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 600, 150))
 
         pt.StopTimer("Refreshing images")
 
@@ -493,17 +485,24 @@ class Main(customtkinter.CTk):
 
     def StartRecording(self):
         self.recording = True
-        self.filamentRecording = FilamentRecording(5)
+        self.filamentRecording = FilamentRecording()
         self.recordingThread = threading.Thread(target= lambda: self.Record(0)).start()
 
     def StopRecording(self):
         self.recording = False
+        self.filamentRecording.FinishRecording()
         recordingSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
 
     def Record(self, delaySec):
+        measurementInfoList = []
+
         while self.recording:
             self.TakeAndMeasureImage()
-            self.filamentRecording.AddMeasurementInfo(self.lastMeasurementInfo)
+            measurementInfoList.append(self.lastMeasurementInfo)
+            if 5 <= len(measurementInfoList):
+                self.filamentRecording.AddMeasurementInfoGroup(MeasurementInfoGroup(measurementInfoList))
+                measurementInfoList = []
+
             time.sleep(delaySec)
 
 if __name__ == "__main__":
