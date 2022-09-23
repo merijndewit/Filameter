@@ -259,6 +259,7 @@ class SettingType(Enum):
     NUMBEROFMEASUREMENTS = 1
     BORDEROFFSET = 2
     PIXELSPERMM = 3
+    THRESHOLD = 4
 
 class Setting():
     def __init__(self, value, settingType):
@@ -286,7 +287,10 @@ class Settings():
         self.settings = []
         self.CreateSetting(4, SettingType.NUMBEROFMEASUREMENTS)
         self.CreateSetting(200, SettingType.BORDEROFFSET)
-        self.CreateSetting(157, SettingType.PIXELSPERMM)
+        self.CreateSetting(371, SettingType.PIXELSPERMM)
+        self.CreateSetting(120, SettingType.THRESHOLD)
+        self.imageProcessingType = imageProcessing.ImageProcessingType.FILAMETER
+
 
     def CreateSetting(self, value, settingType):
         newSetting = Setting(value, settingType)
@@ -316,22 +320,28 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
 
         self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5))
+        self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
         self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", SettingType.NUMBEROFMEASUREMENTS, self.parent)
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
         self.numberOfMeasurementsSetting.UpdateTextValueFromSetting()
 
         self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 10), pady=(2, 5))
+        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 2), pady=(2, 5))
         self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", SettingType.BORDEROFFSET, self.parent)
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
         self.measureBorderOffsetButtonSetting.UpdateTextValueFromSetting()
 
         self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 10), pady=(2, 5))
+        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 2), pady=(2, 5))
         self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", SettingType.PIXELSPERMM, self.parent)
         self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
         self.pixelsPerMMButtonSetting.UpdateTextValueFromSetting()
+
+        self.thresholdButton = customtkinter.CTkButton(master=self, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.thresholdButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
+        self.thresholdButtonSetting = SettingsButton(self.thresholdButton, "threshold ", SettingType.THRESHOLD, self.parent)
+        self.thresholdButton.configure(command=lambda: self.Select(self.thresholdButtonSetting))
+        self.thresholdButtonSetting.UpdateTextValueFromSetting()
 
 
     def Select(self, selectedButton):
@@ -362,7 +372,7 @@ class RecordPad(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=2, column=0, padx=(320, 30), pady=(5, 0), sticky=N)
+        self.grid(row=2, column=0, padx=(350, 30), pady=(5, 0), sticky=N)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -458,13 +468,16 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat())
+        processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat(), self.settings.GetSetting(SettingType.THRESHOLD).GetValueInt(), self.settings.imageProcessingType)
         
         self.lastMeasurementInfo = MeasurementInfo(measurements, filamentCalculations.GetAverageFromReadings(measurements), filamentCalculations.GetToleranceFromReadings(measurements))
 
         pt.StartTimer()
 
-        self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 600, 150))
+        if self.settings.imageProcessingType == imageProcessing.ImageProcessingType.FILAMETER:
+            self.filamentViewFrame.RefreshProcessedImage(imageManager.PILToTKAndResize(processedImage, 600, 150))
+        else:
+            self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 600, 150))
 
         pt.StopTimer("Refreshing images")
 

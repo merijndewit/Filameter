@@ -13,15 +13,11 @@ def CV2ToTKAndResize(image, scale):
     return itk.PhotoImage(CV2ToPIL(resizedImage))
 
 def CV2ToTKAndResize(image, width, height):
-
-
     resizedImage = cv2.resize(image, (width, height))
     return itk.PhotoImage(CV2ToPIL(resizedImage))
 
-def PILToTKAndResize(image, scale):
-    sizeX = int(image.size[0] * scale)
-    sizeY = int(image.size[1] * scale)
-    resizedImage = image.resize((sizeX, sizeY))
+def PILToTKAndResize(image, width, height):
+    resizedImage = image.resize((width, height))
     return itk.PhotoImage(resizedImage)
 
 def CV2ToPIL(img):
