@@ -1,6 +1,3 @@
-from ast import arguments
-from cgitb import text
-from contextlib import nullcontext
 from tkinter import *
 from enum import Enum
 
@@ -28,10 +25,10 @@ class ButtonHelper():
         threading.Thread(target=ButtonHelper.EnableButtonWhenRelatedTaskIsFinished, args=(threadToRun, button)).start()
 
 class SettingsButton():
-    def __init__(self, ctkButton, text, settingType, main):
+    def __init__(self, ctkButton, text, setting, main):
         self.ctkButton = ctkButton
         self.text = text
-        self.settingType = settingType
+        self.setting = setting
         self.main = main
 
     def Select(self):
@@ -44,9 +41,7 @@ class SettingsButton():
         self.ctkButton.configure(text=self.text + str(value))
 
     def UpdateTextValueFromSetting(self):
-        setting = self.main.settings.GetSetting(self.settingType)
-
-        self.ctkButton.configure(text=self.text + str(setting.GetValue()))
+        self.ctkButton.configure(text=self.text + str(self.setting.GetValue()))
 
 
 class FilamentViewFrame(customtkinter.CTkFrame):
@@ -129,7 +124,7 @@ class FilamentGraph(customtkinter.CTkFrame):
             self.drawnLines.append(line)
 
     def GetXdrawingPosition(self, numberOfMeasurements, measurementIndex, canvasWidth):
-        sideBorder = self.parent.settings.GetSetting(SettingType.BORDEROFFSET).GetValue() * 0.3
+        sideBorder = self.parent.settings.borderOffset.GetValue() * 0.3
         pixelsPerMeasurement = int((canvasWidth - (sideBorder * 2)) / (numberOfMeasurements + 1))
 
         position = int((pixelsPerMeasurement * (measurementIndex + 1)) + sideBorder)
@@ -220,25 +215,43 @@ class ControlPad(customtkinter.CTkFrame):
         self.addButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5), sticky=W)
 
         self.subtractButton = customtkinter.CTkButton(master=self, text="-",  fg_color=parent.buttonColor, hover_color=parent.buttonHoverColor, text_font=("", 16), width=50, height=50, command= lambda: self.parent.settingsFrame.AddSelectedValue(- self.addValue))
-        self.subtractButton.grid(row=1, column=0, padx=(10, 10), pady=(5, 10), sticky=E)
+        self.subtractButton.grid(row=1, column=0, padx=(10, 10), pady=(2, 5), sticky=E)
 
-        self.addAmountButton02 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
+        self.addAmountButton02 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
         self.addAmountButton02.grid(row=2, column=0, padx=(5, 0), pady=(2, 5), sticky=W)
         self.addAmountButton02Setting = ValueToggleButton(self.addAmountButton02, 0.2)
         self.addAmountButton02.configure(command=lambda: self.Select(self.addAmountButton02Setting))
         self.addAmountButton02Setting.DisplayValue()
 
-        self.addAmountButton1 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
-        self.addAmountButton1.grid(row=2, column=0, padx=(50, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton1 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
+        self.addAmountButton1.grid(row=2, column=0, padx=(53, 0), pady=(2, 5), sticky=W)
         self.addAmountButton1Setting = ValueToggleButton(self.addAmountButton1, 1)
         self.addAmountButton1.configure(command=lambda: self.Select(self.addAmountButton1Setting))
         self.addAmountButton1Setting.DisplayValue()
 
-        self.addAmountButton5 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=35)
-        self.addAmountButton5.grid(row=2, column=0, padx=(90, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton10 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
+        self.addAmountButton10.grid(row=2, column=0, padx=(100, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton10Setting = ValueToggleButton(self.addAmountButton10, 10)
+        self.addAmountButton10.configure(command=lambda: self.Select(self.addAmountButton10Setting))
+        self.addAmountButton10Setting.DisplayValue()
+
+        self.addAmountButton05 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
+        self.addAmountButton05.grid(row=3, column=0, padx=(5, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton05Setting = ValueToggleButton(self.addAmountButton05, 0.5)
+        self.addAmountButton05.configure(command=lambda: self.Select(self.addAmountButton05Setting))
+        self.addAmountButton05Setting.DisplayValue()
+
+        self.addAmountButton5 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
+        self.addAmountButton5.grid(row=3, column=0, padx=(53, 0), pady=(2, 5), sticky=W)
         self.addAmountButton5Setting = ValueToggleButton(self.addAmountButton5, 5)
         self.addAmountButton5.configure(command=lambda: self.Select(self.addAmountButton5Setting))
         self.addAmountButton5Setting.DisplayValue()
+
+        self.addAmountButton100 = customtkinter.CTkButton(master=self, text="", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=40, height=38)
+        self.addAmountButton100.grid(row=3, column=0, padx=(100, 0), pady=(2, 5), sticky=W)
+        self.addAmountButton100Setting = ValueToggleButton(self.addAmountButton100, 100)
+        self.addAmountButton100.configure(command=lambda: self.Select(self.addAmountButton100Setting))
+        self.addAmountButton100Setting.DisplayValue()
 
         self.Select(self.addAmountButton1Setting)
 
@@ -256,52 +269,59 @@ class ControlPad(customtkinter.CTkFrame):
         self.addValue = selectedButton.value
 
 class SettingType(Enum):
-    NUMBEROFMEASUREMENTS = 1
-    BORDEROFFSET = 2
-    PIXELSPERMM = 3
-    THRESHOLD = 4
+    INT = 1
+    FLOAT = 2
+    BOOL = 3
+    LIST = 4
+
+class ImageProcessingType(Enum):
+    OPENCV = 1
+    FILAMETER = 2
 
 class Setting():
     def __init__(self, value, settingType):
         self.value = value
-        self.type = settingType
+        self.settingType = settingType
 
     def GetValue(self):
-        return self.value
-
-    def GetValueInt(self):
-        return int(self.value)
-    
-    def GetValueFloat(self):
-        return float(self.value)
+        if self.settingType == SettingType.INT:
+            return int(self.value)
+        elif self.settingType == SettingType.FLOAT:
+            return round(float(self.value), 3)
+        elif self.settingType == SettingType.BOOL:
+            if self.value != 0:
+                return True
+            return False 
+        elif self.settingType == SettingType.LIST:
+            self.value[0]
+        return None
 
     def Set(self, value):
         self.value = value
 
     def Add(self, value):
-        self.value += value
-
+        if self.settingType == SettingType.INT:
+            self.value += int(value)
+            return
+        elif self.settingType == SettingType.FLOAT:
+            self.value += float(value)
+            return
+        elif self.settingType == SettingType.BOOL:
+            if self.value == 0:
+                self.value == 1
+                return
+            self.value == 0
+            return
+        elif self.settingType == SettingType.LIST:
+            self.value.insert(0, self.value.pop())
 
 class Settings():
     def __init__(self):
-        self.settings = []
-        self.CreateSetting(4, SettingType.NUMBEROFMEASUREMENTS)
-        self.CreateSetting(200, SettingType.BORDEROFFSET)
-        self.CreateSetting(371, SettingType.PIXELSPERMM)
-        self.CreateSetting(120, SettingType.THRESHOLD)
-        self.imageProcessingType = imageProcessing.ImageProcessingType.FILAMETER
-
-
-    def CreateSetting(self, value, settingType):
-        newSetting = Setting(value, settingType)
-        self.settings.append(newSetting)
-
-    def GetSetting(self, settingType):
-        for i in range(len(self.settings)):
-            if self.settings[i].type == settingType:
-                return self.settings[i]
-
-
+        self.numberOfMeasurements = Setting(4, SettingType.INT)
+        self.borderOffset = Setting(200, SettingType.INT)
+        self.pixelsPerMM = Setting(371, SettingType.FLOAT)
+        self.threshold = Setting(120, SettingType.INT)
+        self.imageProcessingType = Setting([ImageProcessingType.FILAMETER, ImageProcessingType.OPENCV], SettingType.LIST)
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
@@ -312,7 +332,7 @@ class SettingsFrame(customtkinter.CTkFrame):
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=2, column=0, padx=(200, 30), pady=(5, 0), sticky=NW)
+        self.grid(row=2, column=0, padx=(175, 30), pady=(5, 0), sticky=NW)
 
         self.selectedButton = None
 
@@ -321,25 +341,25 @@ class SettingsFrame(customtkinter.CTkFrame):
 
         self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
-        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", SettingType.NUMBEROFMEASUREMENTS, self.parent)
+        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", self.parent.settings.numberOfMeasurements, self.parent)
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
         self.numberOfMeasurementsSetting.UpdateTextValueFromSetting()
 
         self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 2), pady=(2, 5))
-        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", SettingType.BORDEROFFSET, self.parent)
+        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", self.parent.settings.borderOffset, self.parent)
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
         self.measureBorderOffsetButtonSetting.UpdateTextValueFromSetting()
 
         self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 2), pady=(2, 5))
-        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", SettingType.PIXELSPERMM, self.parent)
+        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", self.parent.settings.pixelsPerMM, self.parent)
         self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
         self.pixelsPerMMButtonSetting.UpdateTextValueFromSetting()
 
         self.thresholdButton = customtkinter.CTkButton(master=self, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
         self.thresholdButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
-        self.thresholdButtonSetting = SettingsButton(self.thresholdButton, "threshold ", SettingType.THRESHOLD, self.parent)
+        self.thresholdButtonSetting = SettingsButton(self.thresholdButton, "threshold ", self.parent.settings.threshold, self.parent)
         self.thresholdButton.configure(command=lambda: self.Select(self.thresholdButtonSetting))
         self.thresholdButtonSetting.UpdateTextValueFromSetting()
 
@@ -357,7 +377,7 @@ class SettingsFrame(customtkinter.CTkFrame):
     def AddSelectedValue(self, value):
         if self.selectedButton == None:
             return
-        setting = self.parent.settings.GetSetting(self.selectedButton.settingType)
+        setting = self.selectedButton.setting
         
         setting.Add(value)
         self.selectedButton.UpdateTextValueFromSetting()
@@ -468,13 +488,13 @@ class Main(customtkinter.CTk):
 
     def TakeAndMeasureImage(self):
         capturedimage = captureImage.CaptureImage()
-        processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.GetSetting(SettingType.NUMBEROFMEASUREMENTS).GetValueInt(), self.settings.GetSetting(SettingType.BORDEROFFSET).GetValueInt(), self.settings.GetSetting(SettingType.PIXELSPERMM).GetValueFloat(), self.settings.GetSetting(SettingType.THRESHOLD).GetValueInt(), self.settings.imageProcessingType)
+        processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.numberOfMeasurements.GetValue(), self.settings.borderOffset.GetValue(), self.settings.pixelsPerMM.GetValue(), self.settings.threshold.GetValue(), self.settings.imageProcessingType.GetValue())
         
         self.lastMeasurementInfo = MeasurementInfo(measurements, filamentCalculations.GetAverageFromReadings(measurements), filamentCalculations.GetToleranceFromReadings(measurements))
 
         pt.StartTimer()
 
-        if self.settings.imageProcessingType == imageProcessing.ImageProcessingType.FILAMETER:
+        if self.settings.imageProcessingType == ImageProcessingType.FILAMETER:
             self.filamentViewFrame.RefreshProcessedImage(imageManager.PILToTKAndResize(processedImage, 600, 150))
         else:
             self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 600, 150))
