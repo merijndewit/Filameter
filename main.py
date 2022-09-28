@@ -45,14 +45,14 @@ class SettingsButton():
 
 
 class FilamentViewFrame(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
         self.configure( width=620,
                         height=180,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-        self.grid(row=0, column=0, padx=(10, 10), pady=(10, 5), sticky=W)
+        self.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky=NW)
         self.imageLabel = customtkinter.CTkLabel(master=self, width=600, height=150, bg_color="#292929", corner_radius=0, text="")
 
         self.imageLabel.grid(row=0, column=0, padx=(10, 10), pady=(10, 10))
@@ -63,14 +63,14 @@ class FilamentViewFrame(customtkinter.CTkFrame):
         self.imageLabel.configure(image=contourImage)
 
 class FilamentGraph(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
         self.configure( width=620,
                         height=64,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-        self.grid(row=1, column=0, padx=(10, 10), pady=(5, 5), sticky=W)
+        self.grid(row=1, column=0, padx=(0, 0), pady=(5, 0), sticky=NW)
 
         self.targetDiameter = 1.750
 
@@ -136,14 +136,14 @@ class FilamentGraph(customtkinter.CTkFrame):
 
 
 class FilamentInfo(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
         self.configure( width=150,
                         height=200,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-        self.grid(row=0, column=0, padx=(640, 10), pady=(10, 5), sticky=NE)
+        self.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky=NE)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Filament Info", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -175,15 +175,16 @@ class ValueToggleButton():
         self.ctkButton.configure(text=str(self.value))
 
 class ButtonFrame(customtkinter.CTkFrame):  
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
         self.configure( width=150,
-                        height=200,
+                        height=180,
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=2, column=0, padx=(10, 0), pady=(5, 0), sticky=W)
+        self.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky=NW)
+        self.grid_propagate(0)
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Single Actions", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -195,15 +196,16 @@ class ButtonFrame(customtkinter.CTkFrame):
         self.previewButton.grid(row=2, column=0, padx=(10, 10), pady=(5, 10))
 
 class ControlPad(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
-        self.configure( width=150,
+        self.configure( width=145,
                         height=200,
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=2, column=0, padx=(600, 5), pady=(5, 0), sticky=NE)
+        self.grid(row=2, column=0, padx=(0, 0), pady=(5, 0), sticky=SE)
+        self.grid_propagate(0)
 
         self.selectedButton = None
         self.addValue = 0
@@ -324,41 +326,45 @@ class Settings():
         self.imageProcessingType = Setting([ImageProcessingType.FILAMETER, ImageProcessingType.OPENCV], SettingType.LIST)
 
 class SettingsFrame(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
-        self.configure( width=150,
-                        height=200,
+        self.configure( width=400,
+                        height=180,
                         corner_radius=4,
                         fg_color="#1E1E1E")
-
-        self.grid(row=2, column=0, padx=(175, 30), pady=(5, 0), sticky=NW)
+        self.grid_propagate(0)
+        self.grid(row=0, column=1, padx=(5, 0), pady=(0, 0), sticky=NW)
 
         self.selectedButton = None
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Settings", text_color="#ffffff", text_font='Helvetica 11 bold')
-        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
+        self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0), sticky=W)
 
-        self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
         self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
+        self.numberOfMeasurementsButton.grid_propagate(0)
         self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", self.parent.settings.numberOfMeasurements, self.parent)
         self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
         self.numberOfMeasurementsSetting.UpdateTextValueFromSetting()
 
-        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 2), pady=(2, 5))
+        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
+        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
+        self.measureBorderOffsetButton.grid_propagate(0)
         self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", self.parent.settings.borderOffset, self.parent)
         self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
         self.measureBorderOffsetButtonSetting.UpdateTextValueFromSetting()
 
-        self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
-        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 2), pady=(2, 5))
+        self.pixelsPerMMButton = customtkinter.CTkButton(master=self, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
+        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
+        self.pixelsPerMMButton.grid_propagate(0)
         self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", self.parent.settings.pixelsPerMM, self.parent)
         self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
         self.pixelsPerMMButtonSetting.UpdateTextValueFromSetting()
 
-        self.thresholdButton = customtkinter.CTkButton(master=self, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=90, height=40)
+        self.thresholdButton = customtkinter.CTkButton(master=self, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
         self.thresholdButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
+        self.thresholdButton.grid_propagate(0)
         self.thresholdButtonSetting = SettingsButton(self.thresholdButton, "threshold ", self.parent.settings.threshold, self.parent)
         self.thresholdButton.configure(command=lambda: self.Select(self.thresholdButtonSetting))
         self.thresholdButtonSetting.UpdateTextValueFromSetting()
@@ -384,15 +390,16 @@ class SettingsFrame(customtkinter.CTkFrame):
 
 
 class RecordPad(customtkinter.CTkFrame):
-    def __init__(self, parent, *args, **kwargs):
-        customtkinter.CTkFrame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, frameParent, *args, **kwargs):
+        customtkinter.CTkFrame.__init__(self, frameParent, *args, **kwargs)
         self.parent = parent
         self.configure( width=150,
                         height=200,
                         corner_radius=4,
                         fg_color="#1E1E1E")
 
-        self.grid(row=2, column=0, padx=(350, 30), pady=(5, 0), sticky=N)
+        self.grid(row=1, column=0, padx=(0, 0), pady=(5, 0), sticky=NE)
+
 
         self.headerLabel = customtkinter.CTkLabel(master=self, text="Record", text_color="#ffffff", text_font='Helvetica 11 bold')
         self.headerLabel.grid(row=0, column=0, padx=(2, 2), pady=(2, 0))
@@ -459,6 +466,7 @@ class Main(customtkinter.CTk):
         customtkinter.CTk.__init__(self, *args, **kwargs)
         self.geometry("800x480")
         self.configure(bg='#121212')
+        self.title("Filameter")
 
         self.buttonColor = "#F5BEE0"
         self.buttonHoverColor = "#F9DCEE"
@@ -473,14 +481,41 @@ class Main(customtkinter.CTk):
         #settings
         self.settings = Settings()
 
+        #frames to organize the layout
+        layoutFramesBackgroundColor = "#121212"
+
+        topLeftFrame = customtkinter.CTkFrame(master=self,
+                               width=620,
+                               height=250,
+                               corner_radius=0,
+                               fg_color=layoutFramesBackgroundColor)
+        topLeftFrame.grid(row=0, column=0, padx=(5, 5), pady=(5, 0), sticky=NW)
+        topLeftFrame.grid_propagate(0)
+
+        bottomLeftFrame = customtkinter.CTkFrame(master=self,
+                               width=620,
+                               height=200,
+                               corner_radius=0,
+                               fg_color=layoutFramesBackgroundColor)
+        bottomLeftFrame.grid(row=1, column=0, padx=(5, 5), pady=(5, 0), sticky=NW)
+        bottomLeftFrame.grid_propagate(0)
+
+        rightFrame = customtkinter.CTkFrame(master=self,
+                               width=145,
+                               height=470,
+                               corner_radius=0,
+                               fg_color=layoutFramesBackgroundColor)
+        rightFrame.grid(row=0, column=1, padx=(5, 5), pady=(5, 0), sticky=NE, rowspan=2)
+        rightFrame.grid_propagate(0)
+
         #frames
-        self.filamentViewFrame = FilamentViewFrame(self)
-        self.filamentGraph = FilamentGraph(self)
-        self.buttonFrame = ButtonFrame(self)
-        self.settingsFrame = SettingsFrame(self)
-        self.controlPad = ControlPad(self)
-        self.recordPad = RecordPad(self)
-        self.filamentInfo= FilamentInfo(self)
+        self.filamentViewFrame = FilamentViewFrame(self, topLeftFrame)
+        self.filamentGraph = FilamentGraph(self, topLeftFrame)
+        self.buttonFrame = ButtonFrame(self, bottomLeftFrame)
+        self.settingsFrame = SettingsFrame(self, bottomLeftFrame)
+        self.controlPad = ControlPad(self, rightFrame)
+        self.recordPad = RecordPad(self, rightFrame)
+        self.filamentInfo= FilamentInfo(self, rightFrame)
 
         self.imageProcessing = imageProcessing.ImageProcessing()
 
