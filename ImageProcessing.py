@@ -4,6 +4,7 @@ import numpy
 import PerformanceTimer as pt
 from PIL import Image
 from enum import Enum
+from main import ImageProcessingType
 
 class ImageProcessing():
     def __init__(self):
@@ -20,8 +21,7 @@ class ImageProcessing():
         self.imageToProcess = imageToProcess
         self.imageProcessingType = imageProcessingType
         self.pixelsPerMilimeter = pixelsPerMM
-
-        if self.imageProcessingType != 2:
+        if self.imageProcessingType.value != ImageProcessingType.FILAMETER.value:
             imageGrayscale = self.ConvertImageToGrayscale(self.PILToCV2(imageToProcess))
             threshold = self.GetThresholdImage(imageGrayscale)
             self.contourImage = self.DrawContours(self.GetContours(threshold), cv2.cvtColor(imageGrayscale, cv2.COLOR_GRAY2BGR))
@@ -78,7 +78,7 @@ class ImageProcessing():
         measurements = []
 
         for i in range(numberOfMeasurements):
-            if self.imageProcessingType == 2:
+            if self.imageProcessingType.value == ImageProcessingType.FILAMETER.value:
                 image, diameterReading = self.GetDiameterFromWidthPositionFilameter(self.imageToProcess, int((pixelsPerMeasurement * (i + 1)) + sideBorder))
             else:
                 image, diameterReading = self.GetDiameterFromWidthPosition(self.contourImage, int((pixelsPerMeasurement * (i + 1)) + sideBorder))

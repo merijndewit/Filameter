@@ -297,7 +297,7 @@ class Setting():
                 return True
             return False 
         elif self.settingType == SettingType.LIST:
-            self.value[0]
+            return self.value[0]
         return None
 
     def Set(self, value):
@@ -318,6 +318,8 @@ class Setting():
             return
         elif self.settingType == SettingType.LIST:
             self.value.insert(0, self.value.pop())
+            return
+
 
 class Settings():
     def __init__(self):
@@ -393,6 +395,13 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.thresholdButton.configure(command=lambda: self.Select(self.thresholdButtonSetting))
         self.thresholdButtonSetting.UpdateTextValueFromSetting()
 
+        self.imageProcessingTypeButton = customtkinter.CTkButton(master=self.settings1, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=250, height=40)
+        self.imageProcessingTypeButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
+        self.imageProcessingTypeButton.grid_propagate(0)
+        self.imageProcessingTypeButtonSetting = SettingsButton(self.imageProcessingTypeButton, "threshold ", self.parent.settings.imageProcessingType, self.parent)
+        self.imageProcessingTypeButton.configure(command=lambda: self.Select(self.imageProcessingTypeButtonSetting))
+        self.imageProcessingTypeButtonSetting.UpdateTextValueFromSetting()
+
 
     def Select(self, selectedButton):
         if selectedButton == self.selectedButton:
@@ -407,9 +416,8 @@ class SettingsFrame(customtkinter.CTkFrame):
     def AddSelectedValue(self, value):
         if self.selectedButton == None:
             return
-        setting = self.selectedButton.setting
         
-        setting.Add(value)
+        self.selectedButton.setting.Add(value)
         self.selectedButton.UpdateTextValueFromSetting()
 
     def ShowFrame(self, frameToShow):
@@ -561,7 +569,7 @@ class Main(customtkinter.CTk):
 
         pt.StartTimer()
 
-        if self.settings.imageProcessingType == ImageProcessingType.FILAMETER:
+        if self.settings.imageProcessingType.GetValue().value == ImageProcessingType.FILAMETER.value:
             self.filamentViewFrame.RefreshProcessedImage(imageManager.PILToTKAndResize(processedImage, 600, 150))
         else:
             self.filamentViewFrame.RefreshProcessedImage(imageManager.CV2ToTKAndResize(processedImage, 600, 150))
