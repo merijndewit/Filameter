@@ -1,13 +1,15 @@
 from tkinter import *
 from enum import Enum
+from os.path import exists
 
 import customtkinter
+import atexit
 import CaptureImage as captureImage
 import ImageProcessing as imageProcessing
 import ImageManager as imageManager
 import PerformanceTimer as pt
 import FilamentCalculations as filamentCalculations
-import RecordingSaver as recordingSaver
+import JsonLoaderAndSaver as jsonLoaderAndSaver
 
 import threading
 import time
@@ -319,6 +321,8 @@ class Setting():
         elif self.settingType == SettingType.LIST:
             self.value.insert(0, self.value.pop())
             return
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class Settings():
@@ -328,6 +332,24 @@ class Settings():
         self.pixelsPerMM = Setting(371, SettingType.FLOAT)
         self.threshold = Setting(120, SettingType.INT)
         self.imageProcessingType = Setting([ImageProcessingType.FILAMETER, ImageProcessingType.OPENCV], SettingType.LIST)
+    
+    @property
+    def __json__(self):
+        return {
+            "numberOfMeasurements": f"{self.numberOfMeasurements.value}",
+            "borderOffset": f"{self.borderOffset.value}",
+            "pixelsPerMM": f"{self.pixelsPerMM.value}",
+            "threshold": f"{self.threshold.value}",
+            "imageProcessingType": f"{[self.imageProcessingType.value[0].name, self.imageProcessingType.value[1].name]}",
+        }
+
+    def LoadFromJSON(self, json):
+        self.numberOfMeasurements.value = int(json["numberOfMeasurements"])
+        self.borderOffset.value = int(json["borderOffset"])
+        self.pixelsPerMM.value = float(json["pixelsPerMM"])
+        self.threshold.value = int(json["threshold"])
+        res = json["imageProcessingType"].strip("[]").replace("'", '').split(', ')
+        self.imageProcessingType.value = [ImageProcessingType[res[0]], ImageProcessingType[res[1]]]
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, frameParent, *args, **kwargs):
@@ -521,6 +543,9 @@ class Main(customtkinter.CTk):
         #settings
         self.settings = Settings()
 
+        if exists("settings.json"):
+            self.settings.LoadFromJSON(jsonLoaderAndSaver.GetJSON("settings"))
+
         #frames to organize the layout
         layoutFramesBackgroundColor = "#121212"
 
@@ -599,7 +624,7 @@ class Main(customtkinter.CTk):
     def StopRecording(self):
         self.recording = False
         self.filamentRecording.FinishRecording()
-        recordingSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
+        jsonLoaderAndSaver.SaveFilamentRecordingToJSON(self.filamentRecording)
 
     def Record(self, delaySec):
         measurementInfoList = []
@@ -613,5 +638,11 @@ class Main(customtkinter.CTk):
 
             time.sleep(delaySec)
 
+    def exit_handler(self):
+        jsonLoaderAndSaver.SaveObjectToJSON(self.settings, "settings")
+        
+
+
 if __name__ == "__main__":
-    Main() 
+    main = Main() 
+    atexit.register(main.exit_handler)
