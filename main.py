@@ -396,43 +396,34 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.settings1Button = customtkinter.CTkButton(master=self, text="1", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=30, command= lambda: self.ShowFrame(self.settings1))
         self.settings1Button.grid(row=0, column=0, padx=(150, 0), pady=(2, 0), sticky=W)
 
+        self.CreateNewSettingButton("border offset", self.settings0, 1, 0, self.parent.settings.numberOfMeasurements)
+        self.CreateNewSettingButton("border offset", self.settings0, 2, 0, self.parent.settings.borderOffset)
+        self.CreateNewSettingButton("pixels/mm", self.settings0, 3, 0, self.parent.settings.pixelsPerMM)
+        self.CreateNewSettingButton("threshold", self.settings0, 1, 1, self.parent.settings.threshold)
 
-        self.numberOfMeasurementsButton = customtkinter.CTkButton(master=self.settings0, fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=30)
-        self.numberOfMeasurementsButton.grid(row=1, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
-        self.numberOfMeasurementsButton.grid_propagate(0)
-        self.numberOfMeasurementsSetting = SettingsButton(self.numberOfMeasurementsButton, "No of M. ", self.parent.settings.numberOfMeasurements, self.parent)
-        self.numberOfMeasurementsButton.configure(command=lambda: self.Select(self.numberOfMeasurementsSetting))
-        self.numberOfMeasurementsSetting.UpdateTextValueFromSetting()
+        self.CreateNewSettingButton("image processing", self.settings1, 1, 1, self.parent.settings.imageProcessingType)
+        self.CreateNewSettingButton("capture width", self.settings1, 1, 0, self.parent.settings.captureWidth)
+        self.CreateNewSettingButton("capture width", self.settings1, 1, 1, self.parent.settings.captureHeight)
 
-        self.measureBorderOffsetButton = customtkinter.CTkButton(master=self.settings0, text="M. border offset", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
-        self.measureBorderOffsetButton.grid(row=2, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
-        self.measureBorderOffsetButton.grid_propagate(0)
-        self.measureBorderOffsetButtonSetting = SettingsButton(self.measureBorderOffsetButton, "M. border offset ", self.parent.settings.borderOffset, self.parent)
-        self.measureBorderOffsetButton.configure(command=lambda: self.Select(self.measureBorderOffsetButtonSetting))
-        self.measureBorderOffsetButtonSetting.UpdateTextValueFromSetting()
+        
 
-        self.pixelsPerMMButton = customtkinter.CTkButton(master=self.settings0, text="pixels per mm", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
-        self.pixelsPerMMButton.grid(row=3, column=0, padx=(10, 2), pady=(2, 5), sticky=W)
-        self.pixelsPerMMButton.grid_propagate(0)
-        self.pixelsPerMMButtonSetting = SettingsButton(self.pixelsPerMMButton, "pixels per mm ", self.parent.settings.pixelsPerMM, self.parent)
-        self.pixelsPerMMButton.configure(command=lambda: self.Select(self.pixelsPerMMButtonSetting))
-        self.pixelsPerMMButtonSetting.UpdateTextValueFromSetting()
+    def CreateNewSettingButton(self, name, master, row, column, settingType):
+        newSettingButton = customtkinter.CTkButton(master=master, text=str(name), fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
+        newSettingButton.grid(row=row, column=column, padx=(2, 2), pady=(2, 5), sticky=W)
+        newSettingButton.grid_propagate(0)
+        newButtonSetting = SettingsButton(newSettingButton, str(name) + " ", settingType, self.parent)
+        newSettingButton.configure(command=lambda: self.Select(newButtonSetting))
+        newButtonSetting.UpdateTextValueFromSetting()
 
-        self.thresholdButton = customtkinter.CTkButton(master=self.settings0, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
-        self.thresholdButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
-        self.thresholdButton.grid_propagate(0)
-        self.thresholdButtonSetting = SettingsButton(self.thresholdButton, "threshold ", self.parent.settings.threshold, self.parent)
-        self.thresholdButton.configure(command=lambda: self.Select(self.thresholdButtonSetting))
-        self.thresholdButtonSetting.UpdateTextValueFromSetting()
+        
 
-        self.imageProcessingTypeButton = customtkinter.CTkButton(master=self.settings1, text="threshold", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=250, height=40)
-        self.imageProcessingTypeButton.grid(row=1, column=1, padx=(2, 2), pady=(2, 5), sticky=W)
-        self.imageProcessingTypeButton.grid_propagate(0)
-        self.imageProcessingTypeButtonSetting = SettingsButton(self.imageProcessingTypeButton, "threshold ", self.parent.settings.imageProcessingType, self.parent)
-        self.imageProcessingTypeButton.configure(command=lambda: self.Select(self.imageProcessingTypeButtonSetting))
-        self.imageProcessingTypeButtonSetting.UpdateTextValueFromSetting()
-
-
+    def CreateNewSettingButton(self, name, master, row, column, settingType):
+        newSettingButton = customtkinter.CTkButton(master=master, text=str(name), fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=150, height=40)
+        newSettingButton.grid(row=row, column=column, padx=(2, 2), pady=(2, 5), sticky=W)
+        newSettingButton.grid_propagate(0)
+        newButtonSetting = SettingsButton(newSettingButton, str(name) + " ", settingType, self.parent)
+        newSettingButton.configure(command=lambda: self.Select(newButtonSetting))
+        newButtonSetting.UpdateTextValueFromSetting()
 
 
     def Select(self, selectedButton):
