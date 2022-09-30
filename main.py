@@ -328,10 +328,15 @@ class Setting():
 class Settings():
     def __init__(self):
         self.numberOfMeasurements = Setting(4, SettingType.INT)
-        self.borderOffset = Setting(200, SettingType.INT)
         self.pixelsPerMM = Setting(371, SettingType.FLOAT)
         self.threshold = Setting(120, SettingType.INT)
         self.imageProcessingType = Setting([ImageProcessingType.FILAMETER, ImageProcessingType.OPENCV], SettingType.LIST)
+        self.borderOffset = Setting(200, SettingType.INT)
+        self.numberOfMeasurements = Setting(4, SettingType.INT)
+        self.captureWidth = Setting(3000, SettingType.INT)
+        self.captureHeight = Setting(750, SettingType.INT)
+
+
     
     @property
     def __json__(self):
@@ -423,6 +428,8 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.imageProcessingTypeButtonSetting = SettingsButton(self.imageProcessingTypeButton, "threshold ", self.parent.settings.imageProcessingType, self.parent)
         self.imageProcessingTypeButton.configure(command=lambda: self.Select(self.imageProcessingTypeButtonSetting))
         self.imageProcessingTypeButtonSetting.UpdateTextValueFromSetting()
+
+
 
 
     def Select(self, selectedButton):
@@ -587,7 +594,7 @@ class Main(customtkinter.CTk):
         self.mainloop();
 
     def TakeAndMeasureImage(self):
-        capturedimage = captureImage.CaptureImage()
+        capturedimage = captureImage.CaptureImage(self.settings.captureWidth.GetValue(), self.settings.captureHeight.GetValue())
         processedImage, measurements = self.imageProcessing.ProcessImage(capturedimage, self.settings.numberOfMeasurements.GetValue(), self.settings.borderOffset.GetValue(), self.settings.pixelsPerMM.GetValue(), self.settings.threshold.GetValue(), self.settings.imageProcessingType.GetValue())
         
         self.lastMeasurementInfo = MeasurementInfo(measurements, filamentCalculations.GetAverageFromReadings(measurements), filamentCalculations.GetToleranceFromReadings(measurements))
