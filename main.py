@@ -396,14 +396,14 @@ class SettingsFrame(customtkinter.CTkFrame):
         self.settings1Button = customtkinter.CTkButton(master=self, text="1", fg_color="#292929", hover_color="#292929", text_font=("", 11), text_color="#ffffff", width=35, height=30, command= lambda: self.ShowFrame(self.settings1))
         self.settings1Button.grid(row=0, column=0, padx=(150, 0), pady=(2, 0), sticky=W)
 
-        self.CreateNewSettingButton("border offset", self.settings0, 1, 0, self.parent.settings.numberOfMeasurements)
+        self.CreateNewSettingButton("measurements", self.settings0, 1, 0, self.parent.settings.numberOfMeasurements)
         self.CreateNewSettingButton("border offset", self.settings0, 2, 0, self.parent.settings.borderOffset)
         self.CreateNewSettingButton("pixels/mm", self.settings0, 3, 0, self.parent.settings.pixelsPerMM)
         self.CreateNewSettingButton("threshold", self.settings0, 1, 1, self.parent.settings.threshold)
 
-        self.CreateNewSettingButton("image processing", self.settings1, 1, 1, self.parent.settings.imageProcessingType)
+        self.CreateNewSettingButton("", self.settings1, 0, 0, self.parent.settings.imageProcessingType)
         self.CreateNewSettingButton("capture width", self.settings1, 1, 0, self.parent.settings.captureWidth)
-        self.CreateNewSettingButton("capture width", self.settings1, 1, 1, self.parent.settings.captureHeight)
+        self.CreateNewSettingButton("capture height", self.settings1, 1, 1, self.parent.settings.captureHeight)
 
         
 
