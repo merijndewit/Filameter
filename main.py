@@ -336,8 +336,6 @@ class Settings():
         self.captureWidth = Setting(3000, SettingType.INT)
         self.captureHeight = Setting(750, SettingType.INT)
 
-
-    
     @property
     def __json__(self):
         return {
@@ -346,6 +344,8 @@ class Settings():
             "pixelsPerMM": f"{self.pixelsPerMM.value}",
             "threshold": f"{self.threshold.value}",
             "imageProcessingType": f"{[self.imageProcessingType.value[0].name, self.imageProcessingType.value[1].name]}",
+            "captureWidth": f"{self.captureWidth.value}",
+            "captureHeight": f"{self.captureHeight.value}",
         }
 
     def LoadFromJSON(self, json):
@@ -355,6 +355,9 @@ class Settings():
         self.threshold.value = int(json["threshold"])
         res = json["imageProcessingType"].strip("[]").replace("'", '').split(', ')
         self.imageProcessingType.value = [ImageProcessingType[res[0]], ImageProcessingType[res[1]]]
+        self.captureWidth.value = int(json["captureWidth"])
+        self.captureHeight.value = int(json["captureHeight"])
+
 
 class SettingsFrame(customtkinter.CTkFrame):
     def __init__(self, parent, frameParent, *args, **kwargs):
